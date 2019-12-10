@@ -1,8 +1,8 @@
-import fuargs
+import sys, fuargs
 
 @fuargs.action
-def test_action():
-    print "test action run"
+def test_action(a, b, c):
+    print "test action run", a, b, c
 
 if __name__ == "__main__":
-    print("Hello, world")
+    fuargs.exec_actions(sys.argv[1:])
