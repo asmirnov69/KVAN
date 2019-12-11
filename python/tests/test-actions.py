@@ -1,5 +1,6 @@
-import sys, fuargs
+import sys
 sys.path.append("..")
+import fuargs
 
 @fuargs.action
 def test_action(a, b, c):
