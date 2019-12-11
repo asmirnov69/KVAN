@@ -1,4 +1,5 @@
 import sys, fuargs
+sys.path.append("..")
 
 @fuargs.action
 def test_action(a, b, c):
