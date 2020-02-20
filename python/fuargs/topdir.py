@@ -16,7 +16,7 @@ class TopDir:
 
         self.prev_pn = pn
         marker_pn = os.path.join(pn, self.marker_file)
-        #print marker_pn, os.path.exists(marker_pn), os.path.isfile(marker_pn)
+        #print(marker_pn, os.path.exists(marker_pn), os.path.isfile(marker_pn))
         # looks like TOPDIR and topdir are the same filename on MacOS
         if os.path.exists(marker_pn):
             if not os.path.isfile(marker_pn):
@@ -31,5 +31,5 @@ def topdir(marker_file = 'TOP-DIR'):
     return o.topdir(pn)
 
 if __name__ == "__main__":
-    print "__file__:", __file__
-    print topdir(marker_file = "TOP-DIR")
+    print("__file__:", __file__)
+    print(topdir(marker_file = "TOP-DIR"))

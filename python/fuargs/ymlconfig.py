@@ -62,10 +62,10 @@ class ConfigReader:
         return ios
 
     def run_pp(self, conf_file, pp_pathes):
-        print "pp_pathes:", pp_pathes
-        print "conf_file:", conf_file
+        print("pp_pathes:", pp_pathes)
+        print("conf_file:", conf_file)
         config_ios = self.preprocess_(conf_file, pp_pathes)
-        print config_ios.getvalue()
+        print(config_ios.getvalue())
 
     def read(self, conf_file, pp_pathes):
         config_ios = self.preprocess_(conf_file, pp_pathes)
@@ -120,14 +120,14 @@ class Config:
         cr.run_pp(conf_file, pp_pathes)
 
     def pprint(self):
-        print self.config if self.config else '--no config loaded--'
+        print(self.config if self.config else '--no config loaded--')
 
     def print_keys(self):
         if self.config is None:
-            print "--no config loaded--"
+            print("--no config loaded--")
             return
         ls = print_keys__(self.config, [], [])
-        print "\n".join([".".join(l) for l in ls])
+        print("\n".join([".".join(l) for l in ls]))
 
     def as_json(self):
         return json.dumps(namedtuple_asdict(self.config))

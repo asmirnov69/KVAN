@@ -1,5 +1,5 @@
 # fuargs
-fuargs - functional style cmd line args parsers for python and c++.
+fuargs - functional style cmd line args parsers for python
 
 # examples
 

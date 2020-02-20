@@ -30,33 +30,33 @@ def build_parser():
     return cmd_parser
 
 def print_usage(argv0, out_fd):
-    print >>out_fd, "{argv0} -h|--help".format(argv0 = argv0)
-    print >>out_fd, "{argv0} --dump-config[=<file>]".format(argv0 = argv0)
-    print >>out_fd, "{argv0} [options] actions".format(argv0 = argv0)
-    print >>out_fd, ""
-    print >>out_fd, "options:"
-    print >>out_fd, "-h or --help -- show help screen and exits"
-    print >>out_fd, "-d or --debug -- run actions with debugger being enabled"
-    print >>out_fd, "-q or --no-console -- no console output during actions run"
-    print >>out_fd, "-Q or --no-log -- no log output during actions run"
-    print >>out_fd, "-s or --show -- print parsed options and processed config then exits"
-    print >>out_fd, "--dump-config or --dump-config=<output-file> -- ... then exits"
+    print("{argv0} -h|--help".format(argv0 = argv0), file = out_fd)
+    print("{argv0} --dump-config[=<file>]".format(argv0 = argv0), file = out_fd)
+    print("{argv0} [options] actions".format(argv0 = argv0), file = out_fd)
+    print("", file = out_fd)
+    print("options:", file = out_fd)
+    print("-h or --help -- show help screen and exits", file = out_fd)
+    print("-d or --debug -- run actions with debugger being enabled", file = out_fd)
+    print("-q or --no-console -- no console output during actions run", file = out_fd)
+    print("-Q or --no-log -- no log output during actions run", file = out_fd)
+    print("-s or --show -- print parsed options and processed config then exits", file = out_fd)
+    print("--dump-config or --dump-config=<output-file> -- ... then exits", file = out_fd)
     sys.exit(23)
 
 def dump_config(out_fn):
     out_fd = open(out_fn, 'r') if out_fn else sys.stdout
-    print >>out_fd, "config dump"
+    print("config dump", file = out_fd)
     sys.exit(23)
     
 def show_opts_actions(opts, actions, out_fd):
-    print >>out_fd, "opts:"
+    print("opts:", file = out_fd)
     for k in opts.keys():
-        print >>out_fd, " ", k, ":", opts[k]
-    print >>out_fd, "actions:"
+        print(" ", k, ":", opts[k], file = out_fd)
+    print("actions:", file = out_fd)
     for action in actions:
-        print >>out_fd, " action:", action.action
+        print(" action:", action.action, file = out_fd)
         for arg in action.args:
-            print >>out_fd, "  ", arg, "==>", action.args[arg]
+            print("  ", arg, "==>", action.args[arg], file = out_fd)
     sys.exit(3)
     
 class Action:
@@ -91,8 +91,8 @@ def parse_cmdline(cmdline_args):
                 arg_name = x.arg_name
                 arg_value = x.arg_value if isinstance(x.arg_value, str) else x.arg_value.asList()
                 action.append_arg(arg_name, arg_value)
-                #print arg_name, type(arg_name), arg_value, type(arg_value)
-                #print '.............'
+                #print(arg_name, type(arg_name), arg_value, type(arg_value))
+                #print('.............')
             actions.append(action)
 
     return opts, actions
@@ -146,10 +146,10 @@ def print_known_actions(out_fd):
         action_description += func.__doc__.strip() if func.__doc__ else "\tno description provided"
         action_descriptions.append(action_description)
     if len(action_descriptions) == 0:
-        print >>out_fd, "no actions"
+        print("no actions", file = out_fd)
     else:
-        print >>out_fd, "\n".join(action_descriptions)
-    print >>out_fd, "Use --help to see help page"        
+        print("\n".join(action_descriptions), file = out_fd)
+    print("Use --help to see help page", file = out_fd)
     sys.exit(23)
 
 def make_call(action):
