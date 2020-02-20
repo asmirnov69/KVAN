@@ -4,7 +4,7 @@
 #
 #import ipdb
 import sys
-import os.path, StringIO
+import os.path, io
 import ruamel.yaml
 import ruamel
 from collections import namedtuple, OrderedDict
@@ -55,7 +55,7 @@ class ConfigReader:
             for ppath in pp_pathes:
                 pp.add_path(ppath)
         pp.parse(fd)
-        ios = StringIO.StringIO()
+        ios = io.StringIO()
         pp.write(ios); ios.seek(0)
         if pp.return_code > 0:
             raise Exception("Config::preprocess_ failed")
