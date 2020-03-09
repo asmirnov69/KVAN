@@ -5,8 +5,7 @@
 #import ipdb
 import sys
 import os.path, io
-import ruamel.yaml
-import ruamel
+import ruamel_yaml
 from collections import namedtuple, OrderedDict
 import json
 import pcpp
@@ -23,9 +22,9 @@ def make_nt__(d):
     m_values = []
     for k, v in d.items():
         #ipdb.set_trace()
-        if isinstance(v, ruamel.yaml.comments.CommentedMap):
+        if isinstance(v, ruamel_yaml.comments.CommentedMap):
             m_values.append(make_nt__(v))
-        elif isinstance(v, ruamel.yaml.comments.CommentedSeq):
+        elif isinstance(v, ruamel_yaml.comments.CommentedSeq):
             m_values.append(list(v))
         else:
             m_values.append(v)
@@ -70,7 +69,7 @@ class ConfigReader:
     def read(self, conf_file, pp_pathes):
         config_ios = self.preprocess_(conf_file, pp_pathes)
 
-        yaml_o = ruamel.yaml.YAML()
+        yaml_o = ruamel_yaml.YAML()
         yaml_o.duplicate_keys = False
         yml_conf = yaml_o.load(config_ios)
         _full_conf = make_nt__(yml_conf)
