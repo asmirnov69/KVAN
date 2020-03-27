@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='fuargs',
-      version='0.5',
+      version='0.6',
       description='fuargs',
       url='',
       author='',
