@@ -21,7 +21,7 @@ namespace Fuargs {
   {
     this->action = action;
     this->arg_name = arg_name;
-    this->arg_descr = arg_descr;
+    this->arg_descr = arg_descr ? arg_descr : "";
     this->action->actual_args.push_back(this);
   }
 
