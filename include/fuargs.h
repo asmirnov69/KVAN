@@ -30,7 +30,8 @@ class Fuargs
   static map<string, pair<action_t, vector<string>>> actions;
   static void add_action(const char* action_name, action_t action_func, const vector<string>& argnames);
   static void exec_actions(int argc, char** argv);
-
+  static void print_known_actions();
+  
  private:
   static bool verbose;
   static string pending_action;

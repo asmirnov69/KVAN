@@ -50,6 +50,20 @@ bool Fuargs::printValue(const char* lexem, size_t len)
   return true;
 }
 
+void Fuargs::print_known_actions()
+{
+  for (auto it = actions.begin(); it != actions.end(); ++it) {
+    ostringstream argnames_s;
+    for (size_t j = 0; j < (*it).second.second.size(); j++) {
+      argnames_s << (*it).second.second[j];
+      if (j + 1 < (*it).second.second.size()) {
+	argnames_s << ",";
+      }
+    }
+    cerr << (*it).first << "[" << argnames_s.str() << "]" << endl;
+  }
+}
+
 void Fuargs::exec_actions(int argc, char** argv)
 { 
   Token Alphanumeric('_');    // start declare one element of "sequence of alphanumeric characters"
@@ -68,6 +82,11 @@ void Fuargs::exec_actions(int argc, char** argv)
   Rule Action = NAME + Fuargs::printAction + "[" + Kvpairs + "]";
   Rule ACTIONCHAIN = Action + Repeat(0, "," + Action);
 
+  if (argc < 2) {
+    print_known_actions();
+    exit(2);
+  }
+  
   ostringstream cmd_line_s;
   for (int i = 1; i < argc; i++) {
     cmd_line_s << argv[i];
@@ -87,18 +106,11 @@ void Fuargs::exec_actions(int argc, char** argv)
     if (it != actions.end()) {
       (*it).second.first(pending_args);
     } else {
+      cerr << "unknown action: " << pending_action << endl;
       cerr << "known actions: " << endl;
-      for (auto it = actions.begin(); it != actions.end(); ++it) {
-	ostringstream argnames_s;
-	for (size_t j = 0; j < (*it).second.second.size(); j++) {
-	  argnames_s << (*it).second.second[j];
-	  if (j + 1 < (*it).second.second.size()) {
-	    argnames_s << ",";
-	  }
-	}
-	cerr << (*it).first << "[" << argnames_s.str() << "]" << endl;
-      }
-      throw runtime_error("action not found");
+      print_known_actions();
+      //throw runtime_error("action not found");
+      exit(3);
     }
   } else {
     cout << "Failed, stopped at=" //%.40s\n status = 0x%0X,  flg = %s%s%s%s%s%s%s%s\n",

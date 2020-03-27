@@ -4,7 +4,7 @@
 bool test_action(const Fuargs::args& args)
 {
   cout << "test_action called" << endl;
-  //cout << "hi: " << args.get("hi") << endl;
+  cout << "hi: " << args.get("hi") << endl;
   cout << "all done" << endl;
   return true;
 }
