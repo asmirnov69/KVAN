@@ -63,14 +63,23 @@ namespace Fuargs {
   {
     for (auto it = actions.begin(); it != actions.end(); ++it) {
       ostringstream argnames_s;
-      for (size_t j = 0; j < (*it).second->actual_args.size(); j++) {
-	argnames_s << (*it).second->actual_args[j]->arg_name;
-	if (j + 1 < (*it).second->actual_args.size()) {
+      vector<ARG*>* actual_args = &(*it).second->actual_args;
+      for (size_t j = 0; j < actual_args->size(); ++j) {
+	ARG* actual_arg = (*actual_args)[j];
+	argnames_s << actual_arg->arg_name;
+	if (j + 1 < actual_args->size()) {
 	  argnames_s << ",";
 	}
-      }
-      
+      }      
       cerr << (*it).first << "[" << argnames_s.str() << "]" << endl;
+
+      for (size_t j = 0; j < actual_args->size(); ++j) {
+	ARG* actual_arg = (*actual_args)[j];
+	cerr << " " << actual_arg->arg_name
+	     << " -- " << actual_arg->arg_descr
+	     << endl;
+      }
+      cerr << endl;
     }
   }
   
