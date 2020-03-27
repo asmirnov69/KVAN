@@ -64,7 +64,7 @@ void Fuargs::exec_actions(int argc, char** argv)
   Lexem KEY = Series(1, Alphanumeric);
   Lexem VALUE = Series(1, Alphanumeric);
   Rule Kv = KEY + Fuargs::printKey + "=" + VALUE + Fuargs::printValue;
-  Rule Kvpairs = Kv + Repeat(0, "," + Kv);
+  Rule Kvpairs = (Kv + Repeat(0, "," + Kv)) | Null();
   Rule Action = NAME + Fuargs::printAction + "[" + Kvpairs + "]";
   Rule ACTIONCHAIN = Action + Repeat(0, "," + Action);
 
