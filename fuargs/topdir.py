@@ -1,4 +1,4 @@
-import os.path
+import os.path, sys
 
 class TopDir:
     def __init__(self, marker_file):
@@ -27,7 +27,9 @@ class TopDir:
 
 def topdir(marker_file = 'TOP-DIR'):
     o = TopDir(marker_file)
-    pn = os.path.realpath(os.getcwd())
+    argv0 = sys.argv[0]
+    pn = os.path.realpath(os.path.dirname(argv0))
+
     return o.topdir(pn)
 
 if __name__ == "__main__":
