@@ -4,7 +4,7 @@ class TopDir:
     def __init__(self, marker_file):
         self.marker_file = marker_file
 
-    def topdir(self, pn):
+    def topdir(self, pn = "."):
         prev_pn = None
         while 1:
             if prev_pn is not None and pn == prev_pn: # at the top
@@ -23,7 +23,14 @@ def topdir(marker_file = 'TOP-DIR'):
     argv0 = sys.argv[0]
     pn = os.path.realpath(os.path.dirname(argv0))
 
-    return o.topdir(pn)
+    topdir_pn = o.topdir(pn)
+    if os.fstat(topdir_pn).st_size > 0:
+        # reading lines and insert them to sys.path
+        ls = map(lambda x: x.strip(), open(topdir_pn, "r").readlines())
+        for l in ls:
+            print("appending", l, "to sys.path")
+            sys.path.append(l)
+    return topdir_pn
 
 if __name__ == "__main__":
     print("__file__:", __file__)
