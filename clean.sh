@@ -10,3 +10,4 @@ find . -name cmake_install.cmake -delete
 find . -name Makefile -delete
 find . -name "*.so" -delete
 find . -name "*.tsk" -delete
+find . -name __pycache__ -type d -print | xargs rm -rf

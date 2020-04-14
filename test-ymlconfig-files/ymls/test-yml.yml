@@ -1,0 +1,7 @@
+#pragma once
+## this is the test of yml include
+##
+
+GLOBALS:
+ ii: 1
+ JJ: 2

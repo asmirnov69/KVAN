@@ -1,0 +1,18 @@
+## config/public.yaml
+a:
+  b: 1
+
+c: 1
+d: [2, 3]
+
+pages:
+  - act:
+      a:
+        b:
+          c: hello
+  - act: idx
+    title: Welcome
+    html: $ENV{USER}$ENV{HOME}/welcome.phtml $ENV{TERM}
+  - act1: idx1
+    title : Welcome1
+    html  : public1/welcome.phtml

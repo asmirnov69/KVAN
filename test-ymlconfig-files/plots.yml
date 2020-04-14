@@ -1,0 +1,31 @@
+tracers:
+  storage: /tmp/plots
+  series:
+    bids:
+      type: XYPoints
+      label: bids
+    asks:
+      type: XYPoints
+      label: asks
+    lim_buys:
+      type: XYPoints
+      label: buys
+    lim_sells:
+      type: XYPoints
+      label: sells
+    trades:
+      type: df
+      row_type:
+        ts: double
+        sid: int
+	price: double
+	size: int
+    quotes:
+      type: df
+      row_type:
+        ts: double
+	sid: int
+	bid: double
+	bsize: int
+	ask: double
+	asize: int
