@@ -1,11 +1,11 @@
 from setuptools import setup
 
-setup(name='fuargs',
+setup(name='KVAN',
       version='1.0',
-      description='fuargs',
+      description='KVAN',
       url='',
       author='',
       author_email='',
       license='MIT',
-      packages=['fuargs'],
+      packages=['KVAN'],
       zip_safe=False)

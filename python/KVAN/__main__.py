@@ -1,5 +1,5 @@
 import sys
-from .actions import *
+from .fuargs import *
 from .ymlconfig import *
 
 @action
@@ -16,4 +16,3 @@ def test_ymlconfig(yml_fn):
 
 if __name__ == "__main__":
     exec_actions(sys.argv[1:])
-    

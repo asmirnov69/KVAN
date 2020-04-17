@@ -1,9 +1,9 @@
 #import ipdb
 import sys
 sys.path.append("..")
-import fuargs
-from fuargs import ymlconfig
-from fuargs.ymlconfig import config
+from KVAN import fuargs
+from KVAN import ymlconfig
+from KVAN.ymlconfig import config
 
 @fuargs.action
 def test_config(yml_fn):

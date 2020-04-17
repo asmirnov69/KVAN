@@ -1,9 +1,9 @@
 import sys
 sys.path.append("..")
-import fuargs
+from KVAN import fuargs
 
 @fuargs.action
-def test_action(a, b, c):
+def test_fuargs(a, b, c):
     """
     this is just a test
     """
