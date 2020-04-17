@@ -1,4 +1,4 @@
-project(fuargs)
+project(KVAN)
 
 include_directories(${top}/cpp/include ${BNFLITE_HOME}/include)
 file(GLOB SRC_FILES *.cpp)
