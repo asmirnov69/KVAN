@@ -76,7 +76,7 @@ def make_release():
     print(cmd)
     exe_cmd(cmd)
 
-    unlink("./MANIFEST.txt")
+    os.unlink("./MANIFEST.txt")
     
 if __name__ == "__main__":
     fuargs.exec_actions(sys.argv[1:])
