@@ -65,7 +65,7 @@ def make_release():
         os.makedirs(archive_dir)
         print(f"tag_release: release archive dir created: {archive_dir}")
 
-    cmd = f"tar zcf {dest_tar_fn} ."
+    cmd = f"tar czf ~/release-archive/{curr_tag}.tgz --transform='s/^\./{curr_tag}/' --exclude=.git ."
     print(cmd)
     exe_cmd(cmd)
     
