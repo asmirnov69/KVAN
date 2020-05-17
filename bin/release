@@ -15,6 +15,9 @@ def exe_cmd(cmd, raise_exception = True):
 def get_curr_tag():
     return exe_cmd("git describe --exact --tags --abbrev=0", False)
 
+def get_curr_commit():
+    return exe_cmd("git rev-parse HEAD", False)
+
 def git_check_mods():
     cmd = "git diff-index --name-only --ignore-submodules HEAD --"
     out = exe_cmd(cmd)
@@ -35,10 +38,12 @@ def show_tag():
         return False
 
     curr_tag = get_curr_tag()
+    curr_commit = get_curr_commit()
     if curr_tag == None:
         print("no tag found")
         return False
     print(curr_tag)
+    print(curr_commit)
     return True
     
 @fuargs.action
@@ -52,19 +57,21 @@ def make_release():
         return False
 
     curr_tag = get_curr_tag()
+    curr_commit = get_curr_commit()
     if curr_tag == None:
         print("tag_release: no tag found")
         return False
     print(f"current tag: {curr_tag}")
+    print(f"current_commit: {curr_commit}")
     
-    #if git_branch_uptodate(source_dir):
-    #    raise Exception(f"tag_release: local branch is not up-to-date with remote in {source_dir}")
-
-    dest_tar_fn = os.path.join(archive_dir, curr_tag + ".tgz")
     if not os.path.exists(archive_dir):
         os.makedirs(archive_dir)
         print(f"tag_release: release archive dir created: {archive_dir}")
 
+
+    with open("./MANIFEST.txt", "w") as fd:
+        print("commit: {curr_commit}", file=fd)
+        
     cmd = f"tar czf ~/release-archive/{curr_tag}.tgz --transform='s/^\./{curr_tag}/' --exclude=.git ."
     print(cmd)
     exe_cmd(cmd)
