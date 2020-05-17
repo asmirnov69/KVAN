@@ -370,8 +370,8 @@ void YMLConfig::parse(const char* yml_fn, const vector<string>& pp_pathes)
   /* Set input file */
   yaml_parser_set_input_file(&parser, fh);
 #else
-  string pp_content;
-  if (!run_preprocessor(yml_fn, pp_pathes, &pp_content, nullptr)) {
+  string pp_content, errors;
+  if (!run_preprocessor(yml_fn, pp_pathes, &pp_content, &errors)) {
     throw runtime_error("preprocessor failed");
   }
   yaml_parser_set_input_string(&parser, (const unsigned char*)pp_content.c_str(), pp_content.size());
