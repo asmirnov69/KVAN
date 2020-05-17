@@ -28,6 +28,11 @@ def git_get_repo_top_dir():
     return exe_cmd("git rev-parse --show-toplevel").strip()
 
 @fuargs.action
+def show_manifest(tarball):
+    release_tag = os.path.basename(tarball).replace(".tgz", "")
+    print(exe_cmd(f"tar zxfO {tarball} {release_tag}/MANIFEST.txt"))
+
+@fuargs.action
 def show_tag():
     if os.getcwd() != git_get_repo_top_dir():
         print("current directory is not top of any git repo")
@@ -70,7 +75,8 @@ def make_release():
 
 
     with open("./MANIFEST.txt", "w") as fd:
-        print(f"commit: {curr_commit}", file=fd)
+        print(f"commit: {curr_commit}", file = fd)
+        print(f"tag: {curr_tag}", file = fd)
         
     cmd = f"tar czf ~/release-archive/{curr_tag}.tgz --transform='s/^\./{curr_tag}/' --exclude=.git ."
     print(cmd)
