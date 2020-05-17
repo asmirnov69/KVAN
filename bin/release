@@ -75,6 +75,8 @@ def make_release():
     cmd = f"tar czf ~/release-archive/{curr_tag}.tgz --transform='s/^\./{curr_tag}/' --exclude=.git ."
     print(cmd)
     exe_cmd(cmd)
+
+    unlink("./MANIFEST.txt")
     
 if __name__ == "__main__":
     fuargs.exec_actions(sys.argv[1:])
