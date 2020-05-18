@@ -1,6 +1,6 @@
 #import ipdb
-import sys
-sys.path.append("..")
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(sys.argv[0]), ".."))
 from KVAN import fuargs
 from KVAN import ymlconfig
 from KVAN.ymlconfig import config
