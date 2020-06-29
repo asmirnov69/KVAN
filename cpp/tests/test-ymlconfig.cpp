@@ -8,7 +8,7 @@ class cpp : public Fuargs::ACTION {
   Fuargs::ARG yml_fn{this, "yml_fn"};
 
   bool action() {
-    YMLConfig conf(true, false);
+    YMLConfig conf("", true, false);
     string out, out_err;
     conf.run_preprocessor(yml_fn.get().c_str(),
 			  vector<string>{"."},
@@ -25,7 +25,7 @@ class parse_yml : public Fuargs::ACTION {
   Fuargs::ARG yml_fn{this, "yml_fn"};
 
   bool action() {
-    YMLConfig conf(true, false);
+    YMLConfig conf("", true, false);
     conf.parse(yml_fn.get().c_str(), {"."});
     cout << "parse complete" << endl;
     conf.dump();

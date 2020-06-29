@@ -74,8 +74,10 @@ string YMLConfigPath::to_string() const
   return o.str();
 }
 
-YMLConfig::YMLConfig(bool enable_dollar_var_expansion, bool debug, bool dry_run)
+YMLConfig::YMLConfig(const string& stem,
+		     bool enable_dollar_var_expansion, bool debug, bool dry_run)
 {
+  this->stem = stem;
   this->enable_dollar_var_expansion = enable_dollar_var_expansion;
   this->debug = debug;
   this->dry_run = dry_run;
@@ -475,7 +477,7 @@ void YMLConfig::dump() const
 YMLConfig YMLConfig::get_config(const char* path_) const
 {
   YMLConfigPath path; path.from_string(path_);
-  YMLConfig ret;
+  YMLConfig ret(path_);
   for (const auto& [key, value]: this->values) {
     if (path.is_subpath_of(key)) {
       YMLConfigPath new_path;
@@ -495,7 +497,7 @@ string YMLConfig::get(const char* path) const
   auto it = this->values_map.find(p);
   if (it == this->values_map.end()) {
     ostringstream m;
-    m << "YMLConfig::get: no such path: " << path << endl;
+    m << "YMLConfig::get: no such path: " << path << " at node " << stem << endl;
     throw runtime_error(m.str());
   }
   return (*it).second;
