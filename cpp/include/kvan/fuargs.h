@@ -4,86 +4,43 @@
 
 #include <map>
 #include <string>
-#include <vector>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <memory>
+#include <functional>
 using namespace std;
 
-namespace Fuargs
+class Fuargs
 {
-  class args {
-  public:
+public:
+  struct args {
     map<string, string> arg_map;
-    string get(const char* argname) const {
-      auto it = arg_map.find(argname);
-      if (it == arg_map.end()) {
-	ostringstream m; m << "no such arg: " << argname;
-	throw runtime_error(m.str());
-      }
-      return (*it).second;
-    }
-
-    void dump() {
-      cerr << "args dump:" << endl;
-      for (auto& [k, v]: arg_map) {
-	cerr << k << ": " << v << endl;
-      }
-      cerr << "---" << endl;
-    }
+    string get(const char* argname) const;
+    void dump() const;
+    bool is_compatible_args_proto_list(const vector<string>&) const;
   };
 
-  class ARG;
-  class ACTION {
-  public:
-    vector<ARG*> actual_args;
-    void init_actual_args(const args& call_args);
-    virtual bool action() = 0;
-  };
+  typedef function<bool(const Fuargs::args&)> action_func_t;
 
-  class ARG {
-  public:
-    ACTION* action;
-    string arg_name, arg_descr;
-    string arg_value;
-    ARG(ACTION*, const char* arg_name, const char* arg_descr = nullptr);
-    string get() { return arg_value; }
-  };
+  static int add_action(const string& action_proto, action_func_t);
+  static void print_known_actions();
+  static void exec_actions(int argc, char** argv);
 
-  class ACTIONS {
-  private:
-    static bool verbose;
-    static string pending_action;
-    static string pending_key, pending_value;
-    static args pending_args;
-    
-    static bool printAction(const char* lexem, size_t len);
-    static bool printKey(const char* lexem, size_t len);
-    static bool printValue(const char* lexem, size_t len);
+private:
+  // first: action name, second: all action args
+  static pair<string, vector<string>>
+  parse_action_proto(const string& action_proto);
+  // first: action name, second: args map
+  static pair<string, struct args> parse_action(const string& action_s);
+  // verifies that given action and its args do match proto
+  static bool verify_action_args(const string& action, const args& args);
 
-  public:
-    static map<string, unique_ptr<ACTION>> actions;
-    static void exec_actions(int argc, char** argv);
-    static void print_known_actions();
-  };
-  
-  template <class ACTION>
-  static void add_action(const char* action_name) {
-    auto it = ACTIONS::actions.find(action_name);
-    if (it != ACTIONS::actions.end()) {
-      ostringstream m;
-      m << "such action already added: " << action_name;
-      throw runtime_error(m.str());
-    }
-
-    auto p = make_unique<ACTION>();
-    ACTIONS::actions[action_name] = move(p);
-  }
-
-  inline void exec_actions(int argc, char** argv) {
-    ACTIONS::exec_actions(argc, argv);
-  }
+  // key: action name, value: (action arg names, action descr)
+  static map<string, pair<vector<string>, string>> action_protos;
+  // key: action name, value: function to be called
+  static map<string, action_func_t> actions;
 };
+
+#define TOKENPASTE(x, y) x ## y
+#define TOKENPASTE2(x, y) TOKENPASTE(x, y)
+#define ADD_ACTION(x, ...) static int TOKENPASTE2(Unique_, __LINE__) = Fuargs::add_action((x), __VA_ARGS__)
+
 
 #endif

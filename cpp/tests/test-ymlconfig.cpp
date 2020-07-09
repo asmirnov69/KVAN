@@ -4,33 +4,13 @@ using namespace std;
 #include <kvan/fuargs.h>
 #include <kvan/ymlconfig.h>
 
-class cpp : public Fuargs::ACTION {
-  Fuargs::ARG yml_fn{this, "yml_fn"};
-
-  bool action() {
+ADD_ACTION("parse_yml[yml_fn]", [](const Fuargs::args& args) {
     YMLConfig conf("", true, false);
-    string out, out_err;
-    conf.run_preprocessor(yml_fn.get().c_str(),
-			  vector<string>{"."},
-			  &out, &out_err);
-    cerr << out_err << endl;
-    cerr << out << endl;
-
-    return true;
-  }
-  
-};
-
-class parse_yml : public Fuargs::ACTION {
-  Fuargs::ARG yml_fn{this, "yml_fn"};
-
-  bool action() {
-    YMLConfig conf("", true, false);
-    conf.parse(yml_fn.get().c_str(), {"."});
+    conf.parse(args.get("yml_fn").c_str(), {"."});
     cout << "parse complete" << endl;
     conf.dump();
     cout << "--------" << endl;
-
+    
 #if 0
     {
       auto c_tracer = conf.get_config("simulation.tracer");
@@ -64,13 +44,28 @@ class parse_yml : public Fuargs::ACTION {
 #endif
   
     return 0;
-  }
-};
+  });
+
+ADD_ACTION("cpp[yml_fn]", [](const Fuargs::args& args) {
+    string yml_fn = args.get("yml_fn");
+    YMLConfig conf("", true, false);
+#if 0
+    string out;
+    string out_err;
+#else
+    string out, out_err; // CPP BUG!
+#endif
+    
+    conf.run_preprocessor(args.get("yml_fn").c_str(),
+			  vector<string>{"."},
+			  &out, &out_err);
+    cerr << out_err << endl;
+    cerr << out << endl;
+    return true;
+  });
 
 int main(int argc, char** argv)
 {
-  Fuargs::add_action<parse_yml>("parse_yml");
-  Fuargs::add_action<cpp>("cpp");
   Fuargs::exec_actions(argc, argv);
 }
 
