@@ -1,5 +1,5 @@
 #include <iostream>
-#include "fuargs.h"
+#include <kvan/fuargs.h>
 
 class test_action : public Fuargs::ACTION {
   Fuargs::ARG hi{this, "hi", "this is an important param"};

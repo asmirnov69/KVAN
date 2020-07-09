@@ -1,8 +1,8 @@
 #include <iostream>
 using namespace std;
 
-#include <fuargs.h>
-#include <ymlconfig.h>
+#include <kvan/fuargs.h>
+#include <kvan/ymlconfig.h>
 
 class cpp : public Fuargs::ACTION {
   Fuargs::ARG yml_fn{this, "yml_fn"};

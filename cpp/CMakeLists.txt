@@ -7,4 +7,5 @@ set(BNFLITE_HOME /usr/local/philotymic/3rdparty)
 
 add_subdirectory(src)
 add_subdirectory(tests)
+add_subdirectory(examples)
 
