@@ -4,7 +4,8 @@
 #include <iterator>
 using namespace std;
 
-#include <kvan/struct-descriptor.h>
+#include <kvan/fuargs.h>
+#include <kvan/vector-io.h>
 
 template <class T> string get_enum_value_string(T);
 
@@ -102,24 +103,43 @@ inline StructDescriptor get_struct_descriptor<Person>()
   return sd;
 }
 
-int main()
-{  
-  Person p1{.name = FullName{.first_name = "John", .last_name = "Smith", .salutation = Salutation::MR},
-      .address = Address{.line1 = "1 Main St", .line2 = "", .city = "New York", .state = State::NY, .zip = "10001"},
-	 .c = Contact{.phone="123", .email="a@b.c"}, .backup_c = Contact(),
-	 .age = 42, .height = 1.72};
-  Person p2{.name = FullName{.first_name = "Jim", .last_name = "Morrison", .salutation = Salutation::MR},
-      .address = Address{.line1 = "1 Main St", .line2 = "", .city = "Boston", .state = State::MA, .zip = "02142"},
-	 .c = Contact(), .backup_c = Contact(),
-	 .age = 27, .height = 1.8};
-  
-  vector<Person> persons;
-  persons.push_back(p1);
-  persons.push_back(p2);
-  persons.push_back(p2);
+Person p1{.name = FullName{.first_name = "John", .last_name = "Smith", .salutation = Salutation::MR},
+    .address = Address{.line1 = "1 Main St", .line2 = "", .city = "New York", .state = State::NY, .zip = "10001"},
+       .c = Contact{.phone="123", .email="a@b.c"}, .backup_c = Contact(),
+						      .age = 42, .height = 1.72};
+Person p2{.name = FullName{.first_name = "Jim", .last_name = "Morrison", .salutation = Salutation::MR},
+    .address = Address{.line1 = "1 Main St", .line2 = "", .city = "Boston", .state = State::MA, .zip = "02142"},
+       .c = Contact(), .backup_c = Contact(),
+	  .age = 27, .height = 1.8};
 
-  auto [cols, json_df] = to_json_dataframe(persons);
-  copy(cols.begin(), cols.end(), ostream_iterator<string>(cerr, ","));
-  cerr << endl;
-  cout << json_df << endl; 
+
+ADD_ACTION("write_json[]", [](const Fuargs::args&) {
+    vector<Person> persons;
+    persons.push_back(p1);
+    persons.push_back(p2);
+    persons.push_back(p2);
+    
+    auto [cols, json_df] = to_json_dataframe(persons);
+    copy(cols.begin(), cols.end(), ostream_iterator<string>(cerr, ","));
+    cerr << endl;
+    cout << json_df << endl;
+    
+    return true;
+  });
+
+ADD_ACTION("write_csv[]", [](const Fuargs::args&) {
+    vector<Person> persons;
+    persons.push_back(p1);
+    persons.push_back(p2);
+    persons.push_back(p2);
+
+    ostringstream csv_s; to_csv(csv_s, persons);
+    cout << csv_s.str();
+    return true;
+  });
+
+int main(int argc, char** argv)
+{
+  Fuargs::exec_actions(argc, argv);
 }
+
