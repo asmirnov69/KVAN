@@ -153,8 +153,8 @@ static Fuargs::args parse_action_args(const string& action_args_s)
 {
   Fuargs::args ret;
 
-  regex parsing_re(R"D((\w+)\s*=\s*([\w=./\-]+|\[[\w,]+\])\s*,?\s*)D");
-  regex checking_re(R"D((\w+\s*=\s*([\w=./\-]+|\[[\w,]+\])\s*,?\s*)+)D");
+  regex parsing_re(R"D((\w+)\s*=\s*([\w=./\-]+|\[[\w,/\.\-]+\])\s*,?\s*)D");
+  regex checking_re(R"D((\w+\s*=\s*([\w=./\-]+|\[[\w,/\.\-]+\])\s*,?\s*)+)D");
   
   string s = action_args_s;
   for (smatch m; regex_search(s, m, parsing_re); s = m.suffix()) {

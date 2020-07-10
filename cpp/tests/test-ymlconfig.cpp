@@ -3,6 +3,8 @@ using namespace std;
 
 #include <kvan/fuargs.h>
 #include <kvan/ymlconfig.h>
+#include <kvan/ymlconfig-pp.h>
+#include <kvan/string-utils.h>
 
 ADD_ACTION("parse_yml[yml_fn]", [](const Fuargs::args& args) {
     YMLConfig conf("", true, false);
@@ -46,21 +48,16 @@ ADD_ACTION("parse_yml[yml_fn]", [](const Fuargs::args& args) {
     return 0;
   });
 
-ADD_ACTION("cpp[yml_fn]", [](const Fuargs::args& args) {
+ADD_ACTION("cpp[yml_fn,pp_pathes]", [](const Fuargs::args& args) {
     string yml_fn = args.get("yml_fn");
-    YMLConfig conf("", true, false);
-#if 0
-    string out;
-    string out_err;
-#else
-    string out, out_err; // CPP BUG!
-#endif
-    
-    conf.run_preprocessor(args.get("yml_fn").c_str(),
-			  vector<string>{"."},
-			  &out, &out_err);
-    cerr << out_err << endl;
-    cerr << out << endl;
+    vector pp_pathes = string_split(args.get("pp_pathes"), ',');
+    cout << "pp_pathes: " << string_join(pp_pathes, ';') << endl;
+
+    YMLConfigPP pp(pp_pathes);
+    pp.run_pp(args.get("yml_fn"));
+    string pp_content;
+    pp.get_pp_content(&pp_content);
+    cout << pp_content << endl;
     return true;
   });
 

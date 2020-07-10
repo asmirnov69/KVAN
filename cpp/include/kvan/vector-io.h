@@ -1,6 +1,6 @@
 // -*- c++ -*-
-#ifndef __KVAN_VECTOR_IO__HH__
-#define __KVAN_VECTOR_IO__HH__
+#ifndef __KVAN_VECTOR_JSON_IO__HH__
+#define __KVAN_VECTOR_JSON_IO__HH__
 
 #include <iostream>
 using namespace std;

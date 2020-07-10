@@ -16,7 +16,9 @@ using namespace std;
 
 struct StructDescriptor;
 template <class T> string get_enum_value_string(T);
-template <class T> void set_enum_value(T*, const string& new_v);
+template <class T> void set_enum_value(T*, const string& new_v) {
+  throw runtime_error(__func__);
+}
 template <class T> StructDescriptor get_struct_descriptor();
 typedef vector<pair<list<string>, string>> JKV; // json key -> value
 

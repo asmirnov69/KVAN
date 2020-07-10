@@ -3,11 +3,10 @@
 #include <iostream>
 using namespace std;
 
-#include <kvan/ymlconfig.h>
 #include <yaml.h>
-extern "C" {
-#include <mcpp_lib.h>
-}
+
+#include <kvan/ymlconfig.h>
+#include <kvan/ymlconfig-pp.h>
 
 bool operator<(const YMLConfigPath& l, const YMLConfigPath& r)
 {
@@ -281,76 +280,6 @@ void YMLConfig::handle_YAML_BLOCK_SEQUENCE_START_TOKEN(yaml_parser_t* parser)
   } while (!done);
 }
 
-// see also cpp/src/Slice/Preprocessor.cpp in https://github.com/zeroc-ice/ice
-bool
-YMLConfig::run_preprocessor(const char* yml_fn,
-			    const vector<string>& pp_pathes,
-			    string* out, string* out_err)
-{
-  //
-  // Build arguments list.
-  //
-  vector<string> args;
-  args.push_back("-e");
-  args.push_back("en_us.utf8");
-  for (auto& path: pp_pathes) {
-    args.push_back("-I" + path);
-  }
-  args.push_back(yml_fn);
-  
-  const char** argv = new const char*[args.size() + 1];
-  argv[0] = "mcpp";
-  for(unsigned int i = 0; i < args.size(); ++i) {
-    argv[i + 1] = args[i].c_str();
-  }
-  
-  //
-  // Call mcpp using memory buffer.
-  //
-  mcpp_use_mem_buffers(1);
-  int status = mcpp_lib_main(static_cast<int>(args.size()) + 1,
-			     const_cast<char**>(argv));
-  delete[] argv;
-
-  //
-  // Display any errors.
-  //
-  char* err = mcpp_get_mem_buffer(ERR);
-  if (err) {
-    *out_err = err;
-    status = out_err->find("error:") == string::npos ? 0 : 1;
-#if 0
-    vector<string> messages = filterMcppWarnings(err);
-    for(vector<string>::const_iterator i = messages.begin();
-	i != messages.end(); ++i) {
-      emitRaw(i->c_str());
-
-      //
-      // MCPP FIX: mcpp does not always return non-zero exit status when there is an error.
-      //
-      if(i->find("error:") != string::npos) {
-	status = 1;
-      }
-    }
-#endif
-  }
-
-  if (status == 0) {
-    //
-    // Write output
-    //
-    char* buf = mcpp_get_mem_buffer(OUT);
-    *out = buf;
-  }
-
-  //
-  // Calling this again causes the memory buffers to be freed.
-  //
-  mcpp_use_mem_buffers(1);
-
-  return status == 0;
-}
-
 void YMLConfig::parse(const char* yml_fn, const vector<string>& pp_pathes)
 {
 #if 0
@@ -372,10 +301,10 @@ void YMLConfig::parse(const char* yml_fn, const vector<string>& pp_pathes)
   /* Set input file */
   yaml_parser_set_input_file(&parser, fh);
 #else
-  string pp_content, errors;
-  if (!run_preprocessor(yml_fn, pp_pathes, &pp_content, &errors)) {
-    throw runtime_error("preprocessor failed");
-  }
+  YMLConfigPP pp(pp_pathes);
+  pp.run_pp(yml_fn);
+  string pp_content; pp.get_pp_content(&pp_content);
+  
   yaml_parser_set_input_string(&parser, (const unsigned char*)pp_content.c_str(), pp_content.size());
 #endif
 

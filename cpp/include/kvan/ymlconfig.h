@@ -1,6 +1,6 @@
 // -*- c++ -*-
-#ifndef __YML_CONFIG_HH__
-#define __YML_CONFIG_HH__
+#ifndef __KVAN__YML_CONFIG_HH__
+#define __KVAN__YML_CONFIG_HH__
 
 #include <string>
 #include <vector>
@@ -51,10 +51,6 @@ public:
   std::string get(const char* path) const;
   YMLConfig get_config(const char* path) const;  
   void dump() const;
-
-  bool run_preprocessor(const char* yml_fn,
-			const vector<string>& pp_pathes,
-			string* out, string* out_err);
 };
 
 #endif
