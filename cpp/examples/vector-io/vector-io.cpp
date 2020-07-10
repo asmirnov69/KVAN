@@ -9,6 +9,7 @@ using namespace std;
 #include <kvan/vector-io.h>
 
 template <class T> string get_enum_value_string(T);
+template <class T> void set_enum_value(T*, const string& new_value);
 
 enum class Salutation { MR, MRS, MS };
 template <> string get_enum_value_string<Salutation>(Salutation s) {
@@ -21,6 +22,20 @@ template <> string get_enum_value_string<Salutation>(Salutation s) {
   return ret;
 }
 
+template <> void set_enum_value<Salutation>(Salutation* o, const string& new_v)
+{
+  if (new_v == "Mr.") {
+    *o = Salutation::MR;
+  } else if (new_v == "Mrs.") {
+    *o = Salutation::MRS;
+  } else if (new_v == "Ms.") {
+    *o = Salutation::MS;
+  } else {
+    ostringstream m; m << "unknown salutaion " << new_v;
+    throw runtime_error(m.str());
+  }
+}
+
 enum class State { MA, NY, CT, RI };
 template <> string get_enum_value_string<State>(State s) {
   string ret;
@@ -31,6 +46,21 @@ template <> string get_enum_value_string<State>(State s) {
   case State::RI: ret = "RI"; break;
   }
   return ret;
+}
+template <> void set_enum_value<State>(State* o, const string& new_v)
+{
+  if (new_v == "NY") {
+    *o = State::NY;
+  } else if (new_v == "CT") {
+    *o = State::CT;
+  } else if (new_v == "MA") {
+    *o = State::MA;
+  } else if (new_v == "RI") {
+    *o = State::RI;
+  } else {
+    ostringstream m; m << "unknown state: " << new_v;
+    throw runtime_error(m.str());
+  }
 }
 
 struct FullName
@@ -149,7 +179,7 @@ ADD_ACTION("read_csv[fn]", [](const Fuargs::args& args) {
 
     vector<Person> persons;
     from_csv(&persons, in);
-    cout << to_json_dataframe(persons).second;
+    cout << to_json_dataframe(persons).second << endl;
 
     return true;
   });

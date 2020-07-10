@@ -7,5 +7,7 @@
 using namespace std;
 
 vector<string> string_split(const string& s, char del);
+string string_join(const vector<string>& vs, char del);
+vector<string> parse_csv_line(const string& line);
 
 #endif
