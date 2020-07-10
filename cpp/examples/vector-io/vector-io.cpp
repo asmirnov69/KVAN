@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <iterator>
@@ -135,6 +136,21 @@ ADD_ACTION("write_csv[]", [](const Fuargs::args&) {
 
     ostringstream csv_s; to_csv(csv_s, persons);
     cout << csv_s.str();
+    return true;
+  });
+
+ADD_ACTION("read_csv[fn]", [](const Fuargs::args& args) {
+    string fn = args.get("fn");
+    ifstream in(fn);
+    if (!in) {
+      cerr << "can't open file " << fn << endl;
+      return false;
+    }
+
+    vector<Person> persons;
+    from_csv(&persons, in);
+    cout << to_json_dataframe(persons).second;
+
     return true;
   });
 

@@ -4,6 +4,7 @@
 #include <regex>
 using namespace std;
 
+#include <kvan/string-utils.h>
 #include <kvan/fuargs.h>
 
 map<string, pair<vector<string>, string>> Fuargs::action_protos;
@@ -99,7 +100,8 @@ void Fuargs::exec_actions(int argc, char** argv)
     if (!verify_action_args(action, args)) {
       throw runtime_error("verify_action_args failed");
     }
-    (*it).second(args);
+    bool res = (*it).second(args);
+    exit(res ? 0 : 1);
   } else {
     cerr << "unknown action: " << action << endl;
     print_known_actions();
@@ -119,21 +121,6 @@ void Fuargs::print_known_actions()
 }     
 
 // parsing functions
-
-class WordDelimitedByComma : public std::string {};
-static std::istream& operator>>(std::istream& is, WordDelimitedByComma& output)
-{
-  std::getline(is, output, ',');
-  return is;
-}
-
-static vector<string> string_split(const string& s)
-{
-  std::istringstream iss(s);
-  vector<string> v((std::istream_iterator<WordDelimitedByComma>(iss)),
-		   std::istream_iterator<WordDelimitedByComma>());
-  return v;
-}
 
 pair<string, vector<string>>
 Fuargs::parse_action_proto(const string& action_proto)
@@ -158,7 +145,7 @@ Fuargs::parse_action_proto(const string& action_proto)
     throw runtime_error(m.str());
   }
 
-  auto action_proto_args_v = string_split(action_proto_args);
+  auto action_proto_args_v = string_split(action_proto_args, ',');
   return make_pair(action_name, action_proto_args_v);
 }
 

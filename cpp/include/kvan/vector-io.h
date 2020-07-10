@@ -4,28 +4,7 @@
 
 #include <kvan/struct-descriptor.h>
 
-inline string to_json_string(const JKV& j)
-{
-  ostringstream out;
-  out << "{";
-  for (auto it = j.begin(); it != j.end(); ++it) {
-    const auto& [k, v] = *it;
-    out << "\"";
-    for (auto kit = k.begin(); kit != k.end(); ++kit) {
-      out << (*kit);
-      if (next(kit) != k.end()) {
-	out << ".";
-      }
-    }
-    out << "\"";
-    out << ": " << v;
-    if (next(it) != j.end()) {
-      out << ", ";
-    }
-  }
-  out << "}";
-  return out.str();
-}
+string to_json_string(const JKV& j);
 
 template <class T>
 inline pair<vector<string>, string> to_json_dataframe(const vector<T>& v)
@@ -47,18 +26,7 @@ inline pair<vector<string>, string> to_json_dataframe(const vector<T>& v)
   return make_pair(columns, out);
 }
 
-inline string to_csv_string(const JKV& j)
-{
-  ostringstream out;
-  for (auto it = j.begin(); it != j.end(); ++it) {
-    const auto& [k, v] = *it;
-    out << v;
-    if (next(it) != j.end()) {
-      out << ",";
-    }
-  }
-  return out.str();
-}
+string to_csv_string(const JKV& j);
 
 template <class T>
 inline void to_csv(ostream& out, const vector<T>& v)
@@ -83,5 +51,10 @@ inline void to_csv(ostream& out, const vector<T>& v)
   }
 }
 
+template <class T>
+inline void from_csv(vector<T>* v, istream& in)
+{
+  throw runtime_error(__func__);
+}
 
 #endif
