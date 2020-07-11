@@ -4,8 +4,8 @@ import os.path, io, datetime
 import yaml
 from collections import namedtuple, OrderedDict
 import json
-import ymlconfig_pp
-from .dvexpansion import do_dollar_value_expansion
+from .ymlconfig_pp import *
+from .dvexpansion import evaluate_dollar_var_expr
 
 def isnamedtupleinstance(x):
     t = type(x)
@@ -31,7 +31,7 @@ def make_nt__(d):
                 res_l.append(make_nt__(el))
             m_values.append(res_l)
         elif isinstance(v, str):
-            new_v = do_dollar_value_expansion(v)
+            new_v = evaluate_dollar_var_expr(v)
             m_values.append(new_v)
         else:
             m_values.append(v)
@@ -43,7 +43,7 @@ class ConfigReader:
     def run_pp(self, conf_file, pp_pathes):
         print("pp_pathes:", pp_pathes)
         print("conf_file:", conf_file)
-        pp = ymlconfig_pp.MyPP()
+        pp = YMLConfigPP()
         pp.add_pp_pathes(pp_pathes)
         pp.parse(filename)
         
@@ -51,12 +51,11 @@ class ConfigReader:
         print(config_ios.getvalue())
 
     def read(self, conf_file, pp_pathes):
-        pp = ymlconfig_pp.MyPP()
-        pp.add_pp_pathes(pp_pathes)
-        pp.parse(filename)
-        config_ios = self.preprocess_(conf_file, pp_pathes)
-
-        yml_conf = yaml.load(config_ios, Loader = yaml.FullLoader)
+        pp = YMLConfigPP(pp_pathes)
+        pp.run_pp(conf_file)
+        pp_fd = StringIO(pp.get_pp_content())
+        
+        yml_conf = yaml.load(pp_fd, Loader = yaml.FullLoader)
         _full_conf = make_nt__(yml_conf)
         return _full_conf
 
@@ -102,10 +101,17 @@ class Config:
     def __init__(self):
         self.config = None
 
-    def init(self, conf_file, pp_pathes):
+    def parse_file(self, conf_file, pp_pathes):
         cr = ConfigReader()
         self.config = cr.read(conf_file, pp_pathes)
 
+    def parse(self, conf_yml, pp_pathes):
+        pp = YMLConfigPP(pp_pathes)
+        conf_file = pp.find_yml_file(conf_yml)
+        if conf_file == None:
+            raise Exception(f"Config::parse: can't find yml file {conf_yml}")
+        self.parse_file(conf_file, pp_pathes)
+        
     def __getattr__(self, an):
         if hasattr(self.config, an):
             return self.config.__getattribute__(an)

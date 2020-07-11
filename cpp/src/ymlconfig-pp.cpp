@@ -14,8 +14,7 @@ YMLConfigPP::YMLConfigPP(const vector<string>& pp) {
   }
 }
 
-pair<string, bool>
-YMLConfigPP::find_yml_file(const string& yml_fn)
+pair<string, bool> YMLConfigPP::find_yml_file(const string& yml_fn)
 {
   for (auto pp_path: pp_pathes) {
     string yml_pn;
