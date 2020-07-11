@@ -6,51 +6,9 @@ using namespace std;
 #include <kvan/ymlconfig-pp.h>
 #include <kvan/string-utils.h>
 
-ADD_ACTION("parse_yml[yml_fn]", [](const Fuargs::args& args) {
-    YMLConfig conf("", true, false);
-    conf.parse(args.get("yml_fn").c_str(), {"."});
-    cout << "parse complete" << endl;
-    conf.dump();
-    cout << "--------" << endl;
-    
-#if 0
-    {
-      auto c_tracer = conf.get_config("simulation.tracer");
-      c_tracer.dump();
-      cout << "enabled: " << c_tracer.get("enabled") << endl;
-    }
-    cout << "---" << endl;
-    {
-      auto c_tracer = conf.get_config("simulation");
-      c_tracer.dump();
-      cout << "tracer.enabled: " << c_tracer.get("tracer.enabled") << endl;
-    }
-
-#if 0
-    cout << "---" << endl;
-    {
-      auto c_tracer = conf.get_config("simulatio");
-      c_tracer.dump();
-      cout << "tracer.enabled: " << c_tracer.get("tracer.enabled") << endl;
-    }
-#endif
-
-    cout << "---" << endl;
-    {
-      auto strat_conf = conf.get_config("StrategyFactory");
-      cout << "strat_conf:" << endl;
-      strat_conf.dump();
-      cout << "==" << endl;
-      strat_conf.get_config("test_strategy").dump();
-    }
-#endif
-  
-    return 0;
-  });
-
 ADD_ACTION("cpp[yml_fn,pp_pathes]", [](const Fuargs::args& args) {
     string yml_fn = args.get("yml_fn");
-    vector pp_pathes = string_split(args.get("pp_pathes"), ',');
+    vector pp_pathes = string_strip(string_split(args.get("pp_pathes"), ','));
     cout << "pp_pathes: " << string_join(pp_pathes, ';') << endl;
 
     YMLConfigPP pp(pp_pathes);
@@ -60,6 +18,43 @@ ADD_ACTION("cpp[yml_fn,pp_pathes]", [](const Fuargs::args& args) {
     cout << pp_content << endl;
     return true;
   });
+
+ADD_ACTION("parse_yml_file[yml_fn,pp_pathes]", [](const Fuargs::args& args) {
+    string yml_fn = args.get("yml_fn");
+    auto pp_pathes = string_strip(string_split(args.get("pp_pathes"), ','));
+    cout << "pp_pathes: " << string_join(pp_pathes, ';') << endl;
+
+    YMLConfig conf;
+    conf.parse_file(yml_fn, pp_pathes);
+    cout << "parse complete" << endl;
+    conf.dump();
+    cout << "--------" << endl;
+      
+    return true;
+  });
+
+auto parse_yml_proto = R"D(parse_yml[yml,pp_pathes]
+lookup yml file in pp_pathes then parse it
+)D";
+ADD_ACTION(parse_yml_proto, [](const Fuargs::args& args) {
+    auto pp_pathes = string_strip(string_split(args.get("pp_pathes"), ','));
+    cout << "pp_pathes: " << string_join(pp_pathes, ';') << endl;
+    YMLConfigPP pp(pp_pathes);
+    auto yml_fn = pp.find_yml_file(args.get("yml"));
+    if (yml_fn.second == false) {
+      cerr << "can't find yml file " << args.get("yml") << endl;
+      return false;
+    }
+    
+    YMLConfig conf;
+    conf.parse_file(yml_fn.first, pp_pathes);
+    cout << "parse complete" << endl;
+    conf.dump();
+    cout << "--------" << endl;
+      
+  return true;
+  });
+
 
 int main(int argc, char** argv)
 {

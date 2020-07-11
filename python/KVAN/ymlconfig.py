@@ -4,7 +4,7 @@ import os.path, io, datetime
 import yaml
 from collections import namedtuple, OrderedDict
 import json
-import pcpp
+import ymlconfig_pp
 from .dvexpansion import do_dollar_value_expansion
 
 def isnamedtupleinstance(x):
@@ -39,46 +39,21 @@ def make_nt__(d):
     nt_ = namedtuple('nt', d.keys())
     return nt_(*m_values)
 
-class MyPP(pcpp.Preprocessor):
-    def on_directive_unknown(self, directive, toks, ifpassthru, precedingtoks):
-        print("MyPP::on_directive_unknown: ", directive.value)
-        #print(directive, toks, ifpassthru, precedingtoks)
-        self.return_code += 1
-        print("%s:%d error: %s" % (directive.source,directive.lineno,''.join(tok.value for tok in toks)), file = sys.stderr)
-        return None
-
 class ConfigReader:
-    def preprocess_(self, filename, pp_pathes):
-        fd = None
-        if os.path.exists(filename):
-            fd = open(filename)
-        elif pp_pathes:
-            for ppath in pp_pathes:
-                mod_fn = os.path.join(ppath, os.path.basename(filename))
-                if os.path.exists(mod_fn):
-                    fd = open(mod_fn)
-                    break
-        if fd is None:
-            raise Exception("can't locate %s" % filename)
-
-        pp = MyPP()
-        if pp_pathes:
-            for ppath in pp_pathes:
-                pp.add_path(ppath)
-        pp.parse(fd)
-        ios = io.StringIO()
-        pp.write(ios); ios.seek(0)
-        if pp.return_code > 0:
-            raise Exception("Config::preprocess_ failed")
-        return ios
-
     def run_pp(self, conf_file, pp_pathes):
         print("pp_pathes:", pp_pathes)
         print("conf_file:", conf_file)
+        pp = ymlconfig_pp.MyPP()
+        pp.add_pp_pathes(pp_pathes)
+        pp.parse(filename)
+        
         config_ios = self.preprocess_(conf_file, pp_pathes)
         print(config_ios.getvalue())
 
     def read(self, conf_file, pp_pathes):
+        pp = ymlconfig_pp.MyPP()
+        pp.add_pp_pathes(pp_pathes)
+        pp.parse(filename)
         config_ios = self.preprocess_(conf_file, pp_pathes)
 
         yml_conf = yaml.load(config_ios, Loader = yaml.FullLoader)

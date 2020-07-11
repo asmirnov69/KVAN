@@ -9,6 +9,8 @@ using namespace std;
 
 map<string, pair<vector<string>, string>> Fuargs::action_protos;
 map<string, Fuargs::action_func_t> Fuargs::actions;
+int Fuargs::argc{0};
+char** Fuargs::argv{nullptr};
 
 bool
 Fuargs::args::is_compatible_args_proto_list(const vector<string>& args_proto_list) const
@@ -31,7 +33,13 @@ string Fuargs::args::get(const char* argname) const
     ostringstream m; m << "no such arg: " << argname;
     throw runtime_error(m.str());
   }
-  return (*it).second;
+
+  string arg_value = (*it).second;
+  if (arg_value.size() >= 2
+      && arg_value[0] == '[' && arg_value.back() == ']') {
+    return arg_value.substr(1, arg_value.size() - 2);
+  }
+  return string_strip(arg_value);
 }
 
 void Fuargs::args::dump() const
@@ -84,6 +92,9 @@ void Fuargs::exec_actions(int argc, char** argv)
     print_known_actions();
     exit(2);
   }
+
+  Fuargs::argc = argc;
+  Fuargs::argv = argv;
   
   ostringstream cmd_line_s;
   for (int i = 1; i < argc; i++) {
@@ -153,8 +164,8 @@ static Fuargs::args parse_action_args(const string& action_args_s)
 {
   Fuargs::args ret;
 
-  regex parsing_re(R"D((\w+)\s*=\s*([\w=./\-]+|\[[\w,/\.\-]+\])\s*,?\s*)D");
-  regex checking_re(R"D((\w+\s*=\s*([\w=./\-]+|\[[\w,/\.\-]+\])\s*,?\s*)+)D");
+  regex parsing_re(R"D((\w+)\s*=\s*([\w=./\-\$\{\}\"\']+|\[[\s\w=,/\.\-\$\{\}\"\']+\])\s*,?\s*)D");
+  regex checking_re(R"D((\w+\s*=\s*([\w=./\-\$\{\}\"\']+|\[[\s\w=,/\.\-\$\{\}\"\']+\])\s*,?\s*)+)D");
   
   string s = action_args_s;
   for (smatch m; regex_search(s, m, parsing_re); s = m.suffix()) {
@@ -199,6 +210,7 @@ pair<string, Fuargs::args> Fuargs::parse_action(const string& action_s)
   
   auto action = m[1].str();
   auto action_args_s = m[2].str();
+  cout << "action_args_s: '" << action_args_s << "'" << endl;
   auto action_args = parse_action_args(action_args_s);
   
   return make_pair(action, action_args);

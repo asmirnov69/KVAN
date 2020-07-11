@@ -8,6 +8,10 @@ using namespace std;
 
 vector<string> string_split(const string& s, char del);
 string string_join(const vector<string>& vs, char del);
+string string_strip(const string&);
+vector<string> string_strip(const vector<string>&);
+
 vector<string> parse_csv_line(const string& line);
+string evaluate_dollar_var_expr(const string& dv_expr);
 
 #endif

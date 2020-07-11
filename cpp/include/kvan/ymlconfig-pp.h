@@ -18,6 +18,7 @@ private:
   
 public:
   YMLConfigPP(const vector<string>& pp_pathes);
+  pair<string, bool> find_yml_file(const string& yml);
   void run_pp(const string& yml_fn);
   void get_pp_content(string* out_s) { *out_s = out.str(); }
 };

@@ -10,6 +10,9 @@ using namespace std;
 class Fuargs
 {
 public:
+  static int argc;
+  static char** argv;
+  
   struct args {
     map<string, string> arg_map;
     string get(const char* argname) const;

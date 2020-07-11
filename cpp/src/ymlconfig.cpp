@@ -7,6 +7,7 @@ using namespace std;
 
 #include <kvan/ymlconfig.h>
 #include <kvan/ymlconfig-pp.h>
+#include <kvan/string-utils.h>
 
 bool operator<(const YMLConfigPath& l, const YMLConfigPath& r)
 {
@@ -73,70 +74,10 @@ string YMLConfigPath::to_string() const
   return o.str();
 }
 
-YMLConfig::YMLConfig(const string& stem,
-		     bool enable_dollar_var_expansion, bool debug, bool dry_run)
+YMLConfig::YMLConfig(bool debug, bool dry_run)
 {
-  this->stem = stem;
-  this->enable_dollar_var_expansion = enable_dollar_var_expansion;
   this->debug = debug;
   this->dry_run = dry_run;
-}
-
-// ENV{env-var-name}
-static string evaluate_dollar_var_expr(const string& dv_expr)
-{
-  string ret;
-  
-  size_t prefix_end_index = dv_expr.find("{");
-  string prefix = dv_expr.substr(0, prefix_end_index - 0);
-  string arg = dv_expr.substr(prefix_end_index+1,
-			      dv_expr.size() - 1 - (prefix_end_index+1));
-  if (prefix == "ENV") {
-    const char* v = getenv(arg.c_str());
-    if (v) {
-      ret = v;
-    } else {
-      ostringstream m; m << "can't find env var " << arg;
-      throw runtime_error(m.str());
-    }
-  } else {
-    ostringstream m;
-    if (prefix.size() > 0) {
-      m << "unknown dollar var prefix: " << prefix
-	<< ", should be $ENV{var-name}";
-    } else {
-      m << "prefix was empty in expr "
-	<< dv_expr << ", should be $ENV{var-name}";
-    }
-    throw runtime_error(m.str());
-  }
-
-  return ret;
-}
-
-static void do_dollar_var_expansion(string* v)
-{
-  string new_v = *v;
-  while (true) {
-    size_t start_dv_index = 0;
-    size_t end_dv_index = -1;
-
-    start_dv_index = new_v.find("$", end_dv_index + 1);
-    if (start_dv_index == string::npos) {
-      break;
-    }
-    end_dv_index = new_v.find("}", start_dv_index + 1);
-    if (end_dv_index == string::npos) {
-      break;
-    }
-    string dollar_var_expr = new_v.substr(start_dv_index + 1,
-					  end_dv_index + 1 - (start_dv_index + 1));
-    string dollar_var_value = evaluate_dollar_var_expr(dollar_var_expr);
-    new_v.replace(start_dv_index, end_dv_index + 1 - start_dv_index,
-		  dollar_var_value);
-  }
-
-  *v = new_v;
 }
 
 void YMLConfig::handle_YAML_BLOCK_MAPPING_START_TOKEN(yaml_parser_t* parser)
@@ -174,7 +115,7 @@ void YMLConfig::handle_YAML_BLOCK_MAPPING_START_TOKEN(yaml_parser_t* parser)
 	  YMLConfigPath p(curr_path, curr_index);
 	  string v((char*)token.data.scalar.value);
 	  if (this->enable_dollar_var_expansion) {
-	    do_dollar_var_expansion(&v);
+	    v = evaluate_dollar_var_expr(v);
 	  }
 	  this->values.push_back(make_pair(p, v));
 	} else {
@@ -280,16 +221,20 @@ void YMLConfig::handle_YAML_BLOCK_SEQUENCE_START_TOKEN(yaml_parser_t* parser)
   } while (!done);
 }
 
-void YMLConfig::parse(const char* yml_fn, const vector<string>& pp_pathes)
+void YMLConfig::parse(const string& yml, const vector<string>& pp_pathes)
 {
-#if 0
-  FILE *fh = fopen(yml_fn, "r");
-  if (fh == NULL) {
-    ostringstream m; m << "YMLConfig::parse: failed to open file: " << yml_fn;
+  YMLConfigPP pp(pp_pathes);
+  auto yml_fn = pp.find_yml_file(yml);
+  if (yml_fn.second == false) {
+    ostringstream m; m << "YMLConfig::parse: can't find yml " << yml;
     throw runtime_error(m.str());
   }
-#endif
-  
+
+  this->parse_file(yml_fn.first, pp_pathes);
+}
+
+void YMLConfig::parse_file(const string& yml_fn, const vector<string>& pp_pathes)
+{
   yaml_parser_t parser;  
   /* Initialize parser */
   if (!yaml_parser_initialize(&parser)) {

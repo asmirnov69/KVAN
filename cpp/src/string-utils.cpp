@@ -1,9 +1,11 @@
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
+#include <regex>
 using namespace std;
 
 #include <kvan/string-utils.h>
+#include <kvan/topdir.h>
 
 vector<string> string_split(const string& s, char del)  
 {
@@ -27,7 +29,34 @@ string string_join(const vector<string>& vs, char del)
   }
   return out.str();
 }
-			    
+
+// from https://stackoverflow.com/a/25829233/1181482
+inline string& ltrim(string& s, const char* t = " \t\n\r\f\v")
+{
+    s.erase(0, s.find_first_not_of(t));
+    return s;
+}
+inline string& rtrim(string& s, const char* t = " \t\n\r\f\v")
+{
+    s.erase(s.find_last_not_of(t) + 1);
+    return s;
+}
+
+string string_strip(const string& s)
+{
+  string ret(s);
+  return rtrim(ltrim(ret));
+}
+
+vector<string> string_strip(const vector<string>& vs)
+{
+  vector<string> ret;
+  for (auto& s: vs) {
+    ret.push_back(string_strip(s));
+  }
+  return ret;
+}
+
 vector<string> parse_csv_line(const string& line)
 {
   enum class parser_state {
@@ -95,4 +124,25 @@ vector<string> parse_csv_line(const string& line)
   ret.push_back(cell);
   
   return ret;
+}
+
+// expands $ENV{env-var-name} and ${top-dir}
+string evaluate_dollar_var_expr(const string& dv_expr)
+{
+  string res = dv_expr;
+
+  regex env_re(R"D(\$ENV\{(\w+)\})D");
+  string s = dv_expr;
+  for (smatch m; regex_search(s, m, env_re); s = m.suffix()) {
+    if (m.ready() && m.size() == 2) {
+      string env_var = m[1];
+      string env_var_value = getenv(env_var.c_str());
+      string repl = "\\$ENV\\{" + env_var + "\\}";
+      res = regex_replace(res, regex(repl), env_var_value);
+    }
+  }
+
+  res = regex_replace(res, regex("\\$\\{top-dir\\}"),
+		      TopDir::get()->get_topdir());
+  return res;
 }

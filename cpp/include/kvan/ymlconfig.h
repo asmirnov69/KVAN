@@ -43,11 +43,11 @@ class YMLConfig {
   void handle_YAML_BLOCK_SEQUENCE_START_TOKEN(yaml_parser_t*);
   
 public:
-  explicit YMLConfig(const string& stem = "",
-		     bool enable_dollar_var_expansion = true,
-		     bool debug = false, bool dry_run = false);
+  explicit YMLConfig(bool debug = false, bool dry_run = false);
   
-  void parse(const char* yml_fn, const vector<string>& pp_pathes);
+  void parse_file(const string& yml_fn, const vector<string>& pp_pathes);
+  void parse(const string& yml, const vector<string>& pp_pathes);
+  
   std::string get(const char* path) const;
   YMLConfig get_config(const char* path) const;  
   void dump() const;
