@@ -43,7 +43,8 @@ private:
 
 #define TOKENPASTE(x, y) x ## y
 #define TOKENPASTE2(x, y) TOKENPASTE(x, y)
-#define ADD_ACTION(x, ...) static int TOKENPASTE2(Unique_, __LINE__) = Fuargs::add_action((x), __VA_ARGS__)
+#define ADD_ACTION static int TOKENPASTE2(Unique_, __LINE__) \
+= Fuargs::add_action
 
 
 #endif

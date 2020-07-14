@@ -13,5 +13,6 @@ vector<string> string_strip(const vector<string>&);
 
 vector<string> parse_csv_line(const string& line);
 string evaluate_dollar_var_expr(const string& dv_expr);
+string getusername();
 
 #endif

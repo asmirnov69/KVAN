@@ -4,6 +4,9 @@
 #include <regex>
 using namespace std;
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+
 #include <kvan/string-utils.h>
 #include <kvan/topdir.h>
 
@@ -142,7 +145,24 @@ string evaluate_dollar_var_expr(const string& dv_expr)
     }
   }
 
-  res = regex_replace(res, regex("\\$\\{top-dir\\}"),
-		      TopDir::get()->get_topdir());
+  fs::path top_dir = TopDir::get()->get_topdir();
+  res = regex_replace(res, regex("\\$\\{top-dir\\}"), top_dir.string());
+
+  fs::path l_etc_dir = top_dir / "etc";
+  fs::path upper_etc_dir = top_dir.parent_path() / "etc";
+  int f = int(fs::exists(l_etc_dir));
+  f = f + int(fs::exists(upper_etc_dir));
+  if (f > 1) {
+    throw runtime_error("both ${top-dir}/etc and ${top-dir}/../etc exists");
+  }
+
+  auto etc_dir = fs::exists(l_etc_dir) ? l_etc_dir : upper_etc_dir;
+  res = regex_replace(res, regex("\\$\\{etc-dir\\}"), etc_dir.string());
   return res;
+}
+
+string getusername()
+{
+  string ret(getenv("USER"));
+  return ret;
 }
