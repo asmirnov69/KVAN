@@ -13,8 +13,8 @@ template <class T>
 inline void to_csv(ostream& out, const vector<T>& v)
 {
   StructDescriptor psd = get_struct_descriptor<T>();  
-  vector<string> columns;
-  psd.get_columns(&columns);
+  auto vps = psd.get_value_pathes();
+  vector<string> columns = string_join(vps, '.');
 
   for (size_t i = 0; i < columns.size(); i++) {
     out << columns[i];
@@ -25,8 +25,7 @@ inline void to_csv(ostream& out, const vector<T>& v)
   out << endl;
 
   for (size_t i = 0; i < v.size(); i++) {
-    vector<ValuePathValue> vpv;
-    psd.get_value(v[i], &vpv);
+    auto vpv = psd.get_values(v[i]);
     out << to_csv_string(vpv);
     out << endl;
   }

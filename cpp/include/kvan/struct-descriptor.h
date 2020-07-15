@@ -31,8 +31,8 @@ public:
     this->member_name = member_name;
   }
 
-  virtual void get_columns__(vector<ValuePath>* out, ValuePath* path) = 0;
-  virtual void get_value__(const any&, vector<ValuePathValue>*, ValuePath*) = 0;
+  virtual void collect_value_pathes__(ValuePath* curr_vpath, vector<ValuePath>* out) = 0;
+  virtual void collect_values__(const any&, ValuePath* curr_vpath, vector<ValuePathValue>* out) = 0;
   virtual void set_value__(void* o, const string& new_value,
 			   const ValuePath& path,
 			   int curr_member_index) = 0;
@@ -61,24 +61,24 @@ public:
     this->mptr = mptr;
   }
 
-  void get_columns__(vector<ValuePath>* out, ValuePath* path) override
+  void collect_value_pathes__(ValuePath* curr_vpath, vector<ValuePath>* out) override
   {
-    path->push_back(member_name);
+    curr_vpath->push_back(member_name);
     if constexpr(is_enum<MT>::value) {
-      out->push_back(*path);
+	out->push_back(*curr_vpath);
     } else if constexpr(is_string<MT>::value) {
-      out->push_back(*path);
+	out->push_back(*curr_vpath);
     } else if constexpr(is_integral<MT>::value) {
-      out->push_back(*path);
+	out->push_back(*curr_vpath);
     } else if constexpr(is_floating_point<MT>::value) {
-      out->push_back(*path);       
+	out->push_back(*curr_vpath);
     } else if constexpr(is_function<decltype(get_struct_descriptor<MT>)>::value) {
       auto sd = get_struct_descriptor<MT>();
-      sd.get_columns__(out, path);
+      sd.collect_value_pathes__(curr_vpath, out);
     } else {
       throw runtime_error(__func__);
     }
-    path->pop_back();
+    curr_vpath->pop_back();
   }
 
   void set_value__(void* o, const string& new_value,
@@ -103,83 +103,50 @@ public:
     }
   }
     
-  void get_value__(const any& o, vector<ValuePathValue>* out, ValuePath* path) override
+  void collect_values__(const any& o, ValuePath* curr_vpath, vector<ValuePathValue>* out) override
   {
     try {
       const T& obj = any_cast<T>(o);
       const MT& member_v = obj.*mptr;
 
-      path->push_back(member_name);
+      curr_vpath->push_back(member_name);
       if constexpr(is_enum<MT>::value) {
-	  out->push_back(make_pair(*path, "\"" + get_enum_value_string<MT>(member_v) + "\""));
+	  out->push_back(make_pair(*curr_vpath, "\"" + get_enum_value_string<MT>(member_v) + "\""));
       } else if constexpr(is_string<MT>::value) {
-	  out->push_back(make_pair(*path, "\"" + member_v + "\""));
+	  out->push_back(make_pair(*curr_vpath, "\"" + member_v + "\""));
       } else if constexpr(is_integral<MT>::value) {
-	  out->push_back(make_pair(*path, to_string(member_v)));
+	  out->push_back(make_pair(*curr_vpath, to_string(member_v)));
       } else if constexpr(is_floating_point<MT>::value) {
-	  out->push_back(make_pair(*path, to_string(member_v)));
+	  out->push_back(make_pair(*curr_vpath, to_string(member_v)));
       } else if constexpr(is_function<decltype(get_struct_descriptor<MT>)>::value) {
 	auto m_sd = get_struct_descriptor<MT>();
-	m_sd.get_value__(member_v, out, path);
+	m_sd.collect_values__(member_v, curr_vpath, out);
       } else {
 	throw runtime_error(__func__);
       }
-      path->pop_back();
+      curr_vpath->pop_back();
     } catch (const bad_any_cast& ex) {
-	throw runtime_error(ex.what());      
-      }
+      throw runtime_error(ex.what());      
+    }
   }
 };
 
 class StructDescriptor
 {
 public:
-  vector<string> member_names;
-  vector<unique_ptr<MemberDescriptor>> member_descriptors;
-  map<string, int> member_lookup;
-  
-  template <class MT, class T>
-  void add_member(const char* member_name, MT T::*mptr)
-  {
-    member_names.push_back(member_name);
-    member_lookup[member_name] = member_descriptors.size();
-    member_descriptors.emplace_back(make_unique<MemberDescriptorT<MT, T>>(member_name, mptr));
-  }
-
-  void get_columns__(vector<ValuePath>* out, ValuePath* path)
+  void collect_value_pathes__(ValuePath* curr_vpath, vector<ValuePath>* out)
   {
     for (auto& m_descr: member_descriptors) {
-      m_descr->get_columns__(out, path);
+      m_descr->collect_value_pathes__(curr_vpath, out);
     }
-  }
+  }  
 
-  void get_columns(vector<string>* out)
-  {
-    ValuePath path;
-    vector<ValuePath> pathes;
-    get_columns__(&pathes, &path);
-    for (auto& p: pathes) {
-      string cp;
-      for (auto it = p.begin(); it != p.end(); ++it) {
-	cp += *it;
-	if (next(it) != p.end()) {
-	  cp += ".";
-	}
-      }
-      out->push_back(cp);
-    }
-  }
-  
-  void get_value__(const any& o, vector<ValuePathValue>* out, ValuePath* path)
+  void collect_values__(const any& o, ValuePath* curr_vpath,
+			vector<ValuePathValue>* out)
   {
     for (auto& m_descr: member_descriptors) {
-      m_descr->get_value__(o, out, path);
+      m_descr->collect_values__(o, curr_vpath, out);
     }
-  }
-
-  void get_value(const any& o, vector<ValuePathValue>* out) {
-    ValuePath path;
-    get_value__(o, out, &path);
   }
 
   void set_value__(void* o, const string& new_value,
@@ -196,7 +163,36 @@ public:
     auto& md = member_descriptors[(*it).second];
     md->set_value__(o, new_value, path, curr_index);    
   }
+
+public:
+  vector<string> member_names;
+  vector<unique_ptr<MemberDescriptor>> member_descriptors;
+  map<string, int> member_lookup;
   
+  template <class MT, class T>
+  void add_member(const char* member_name, MT T::*mptr)
+  {
+    member_names.push_back(member_name);
+    member_lookup[member_name] = member_descriptors.size();
+    member_descriptors.emplace_back(make_unique<MemberDescriptorT<MT, T>>(member_name, mptr));
+  }
+
+  vector<ValuePath> get_value_pathes()
+  {
+    ValuePath path;
+    vector<ValuePath> pathes;
+    collect_value_pathes__(&path, &pathes);
+    return pathes;
+  }
+  
+  vector<ValuePathValue> get_values(const any& o)
+  {
+    vector<ValuePathValue> out;
+    ValuePath path;
+    collect_values__(o, &path, &out);
+    return out;
+  }
+
   void set_value(void* o, const string& path_s, const string& new_value)
   {
     auto path = string_split(path_s, '.');

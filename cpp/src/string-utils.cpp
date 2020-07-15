@@ -33,6 +33,15 @@ string string_join(const vector<string>& vs, char del)
   return out.str();
 }
 
+vector<string> string_join(const vector<vector<string>>& vvs, char del)
+{
+  vector<string> ret;
+  for (auto& v: vvs) {
+    ret.emplace_back(string_join(v, del));
+  }
+  return ret;
+}
+
 // from https://stackoverflow.com/a/25829233/1181482
 inline string& ltrim(string& s, const char* t = " \t\n\r\f\v")
 {
