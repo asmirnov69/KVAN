@@ -6,7 +6,8 @@
 using namespace std;
 
 #include <kvan/fuargs.h>
-#include <kvan/vector-io.h>
+#include <kvan/vector-csv-io.h>
+#include <kvan/vector-fjson-io.h>
 
 template <class T> string get_enum_value_string(T);
 template <class T> void set_enum_value(T*, const string& new_value);
@@ -144,7 +145,7 @@ Person p2{.name = FullName{.first_name = "Jim", .last_name = "Morrison", .saluta
 	  .age = 27, .height = 1.8};
 
 
-ADD_ACTION("write_json[]", [](const Fuargs::args&) {
+ADD_ACTION("write_fjson[]", [](const Fuargs::args&) {
     vector<Person> persons;
     persons.push_back(p1);
     persons.push_back(p2);
