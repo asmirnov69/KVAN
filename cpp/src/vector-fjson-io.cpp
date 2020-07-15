@@ -1,6 +1,6 @@
 #include <kvan/vector-fjson-io.h>
 
-string to_json_string(const JKV& j)
+string to_fjson_string(const vector<ValuePathValue>& j)
 {
   ostringstream out;
   out << "{";

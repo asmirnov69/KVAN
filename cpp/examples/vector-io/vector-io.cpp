@@ -8,6 +8,7 @@ using namespace std;
 #include <kvan/fuargs.h>
 #include <kvan/vector-csv-io.h>
 #include <kvan/vector-fjson-io.h>
+#include <kvan/vector-json-io.h>
 
 template <class T> string get_enum_value_string(T);
 template <class T> void set_enum_value(T*, const string& new_value);
@@ -151,10 +152,22 @@ ADD_ACTION("write_fjson[]", [](const Fuargs::args&) {
     persons.push_back(p2);
     persons.push_back(p2);
     
-    auto [cols, json_df] = to_json_dataframe(persons);
+    auto [cols, json_df] = to_fjson(persons);
     copy(cols.begin(), cols.end(), ostream_iterator<string>(cerr, ","));
     cerr << endl;
     cout << json_df << endl;
+    
+    return true;
+  });
+
+ADD_ACTION("write_json[]", [](const Fuargs::args&) {
+    vector<Person> persons;
+    persons.push_back(p1);
+    persons.push_back(p2);
+    persons.push_back(p2);
+    
+    auto json_s = to_json(persons);
+    cout << json_s << endl;
     
     return true;
   });
@@ -181,7 +194,7 @@ ADD_ACTION("read_csv[fn]", [](const Fuargs::args& args) {
     vector<Person> persons;
     from_csv(&persons, in);
     cout << "persons size: " << persons.size() << endl;
-    cout << to_json_dataframe(persons).second << endl;
+    cout << to_fjson(persons).second << endl;
 
     return true;
   });
@@ -214,12 +227,10 @@ ADD_ACTION("read_tickers_csv[fn]", [](const Fuargs::args& args) {
     vector<Ticker> tickers;
     from_csv(&tickers, in);
     cout << "tickers size: " << tickers.size() << endl;
-    cout << to_json_dataframe(tickers).second << endl;
+    cout << to_fjson(tickers).second << endl;
 
     return true;
   });
-
-
 
 int main(int argc, char** argv)
 {

@@ -1,6 +1,6 @@
 #include <kvan/vector-csv-io.h>
 
-string to_csv_string(const JKV& j)
+string to_csv_string(const vector<ValuePathValue>& j)
 {
   ostringstream out;
   for (auto it = j.begin(); it != j.end(); ++it) {

@@ -7,7 +7,7 @@ using namespace std;
 
 #include <kvan/struct-descriptor.h>
 
-string to_csv_string(const JKV& j);
+string to_csv_string(const vector<ValuePathValue>& j);
 
 template <class T>
 inline void to_csv(ostream& out, const vector<T>& v)
@@ -25,9 +25,9 @@ inline void to_csv(ostream& out, const vector<T>& v)
   out << endl;
 
   for (size_t i = 0; i < v.size(); i++) {
-    JKV p_json;
-    psd.get_value(v[i], &p_json);
-    out << to_csv_string(p_json);
+    vector<ValuePathValue> vpv;
+    psd.get_value(v[i], &vpv);
+    out << to_csv_string(vpv);
     out << endl;
   }
 }

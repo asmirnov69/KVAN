@@ -20,7 +20,8 @@ template <class T> void set_enum_value(T*, const string& new_v) {
   throw runtime_error(__func__);
 }
 template <class T> StructDescriptor get_struct_descriptor();
-typedef vector<pair<list<string>, string>> JKV; // json key -> value
+typedef vector<string> ValuePath;
+typedef pair<ValuePath, string> ValuePathValue; // value path -> value
 
 class MemberDescriptor
 {
@@ -30,10 +31,10 @@ public:
     this->member_name = member_name;
   }
 
-  virtual void get_columns__(vector<list<string>>* out, list<string>* path) = 0;
-  virtual void get_value__(const any&, JKV*, list<string>*) = 0;
+  virtual void get_columns__(vector<ValuePath>* out, ValuePath* path) = 0;
+  virtual void get_value__(const any&, vector<ValuePathValue>*, ValuePath*) = 0;
   virtual void set_value__(void* o, const string& new_value,
-			   const vector<string>& path,
+			   const ValuePath& path,
 			   int curr_member_index) = 0;
 };
 
@@ -60,7 +61,7 @@ public:
     this->mptr = mptr;
   }
 
-  void get_columns__(vector<list<string>>* out, list<string>* path) override
+  void get_columns__(vector<ValuePath>* out, ValuePath* path) override
   {
     path->push_back(member_name);
     if constexpr(is_enum<MT>::value) {
@@ -102,7 +103,7 @@ public:
     }
   }
     
-  void get_value__(const any& o, JKV* out, list<string>* path) override
+  void get_value__(const any& o, vector<ValuePathValue>* out, ValuePath* path) override
   {
     try {
       const T& obj = any_cast<T>(o);
@@ -145,7 +146,7 @@ public:
     member_descriptors.emplace_back(make_unique<MemberDescriptorT<MT, T>>(member_name, mptr));
   }
 
-  void get_columns__(vector<list<string>>* out, list<string>* path)
+  void get_columns__(vector<ValuePath>* out, ValuePath* path)
   {
     for (auto& m_descr: member_descriptors) {
       m_descr->get_columns__(out, path);
@@ -154,8 +155,8 @@ public:
 
   void get_columns(vector<string>* out)
   {
-    list<string> path;
-    vector<list<string>> pathes;
+    ValuePath path;
+    vector<ValuePath> pathes;
     get_columns__(&pathes, &path);
     for (auto& p: pathes) {
       string cp;
@@ -169,20 +170,20 @@ public:
     }
   }
   
-  void get_value__(const any& o, JKV* out, list<string>* path)
+  void get_value__(const any& o, vector<ValuePathValue>* out, ValuePath* path)
   {
     for (auto& m_descr: member_descriptors) {
       m_descr->get_value__(o, out, path);
     }
   }
 
-  void get_value(const any& o, JKV* out) {
-    list<string> path;
+  void get_value(const any& o, vector<ValuePathValue>* out) {
+    ValuePath path;
     get_value__(o, out, &path);
   }
 
   void set_value__(void* o, const string& new_value,
-		   const vector<string>& path, size_t curr_index)
+		   const ValuePath& path, size_t curr_index)
   {
     auto it = member_lookup.find(path[curr_index]);
     if (it == member_lookup.end()) {
