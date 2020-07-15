@@ -5,7 +5,7 @@ class TopDirImpl:
         self.marker_file = marker_file
         self.topdir = None
         argv0 = sys.argv[0]
-        if os.path.basename(argv0) == "ipython":
+        if os.path.basename(argv0) in ["ipython", "ymlconfig"]:
             pn = os.getcwd()
         else:
             pn = os.path.realpath(os.path.dirname(argv0))

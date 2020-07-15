@@ -78,6 +78,12 @@ YMLConfig::YMLConfig(bool debug, bool dry_run)
 {
   this->debug = debug;
   this->dry_run = dry_run;
+  this->pp_pathes = {".", evaluate_dollar_var_expr("${etc-dir}")};
+}
+
+void YMLConfig::set_pp_pathes(const vector<string>& pp_pathes)
+{
+  this->pp_pathes = pp_pathes;
 }
 
 void YMLConfig::handle_YAML_BLOCK_MAPPING_START_TOKEN(yaml_parser_t* parser)
@@ -221,7 +227,7 @@ void YMLConfig::handle_YAML_BLOCK_SEQUENCE_START_TOKEN(yaml_parser_t* parser)
   } while (!done);
 }
 
-void YMLConfig::parse(const string& yml, const vector<string>& pp_pathes)
+void YMLConfig::parse(const string& yml)
 {
   YMLConfigPP pp(pp_pathes);
   auto yml_fn = pp.find_yml_file(yml);
@@ -230,15 +236,16 @@ void YMLConfig::parse(const string& yml, const vector<string>& pp_pathes)
     throw runtime_error(m.str());
   }
 
-  this->parse_file(yml_fn.first, pp_pathes);
+  this->parse_file__(yml_fn.first, this->pp_pathes);
 }
 
-void YMLConfig::parse_file(const string& yml_fn, const vector<string>& pp_pathes)
+void YMLConfig::parse_file__(const string& yml_fn__,
+			     const vector<string>& pp_pathes__)
 {
-  yaml_parser_t parser;  
+  yaml_parser_t parser;
   /* Initialize parser */
   if (!yaml_parser_initialize(&parser)) {
-    ostringstream m; m << "YMLConfig::parse: failed to initialize parser, file was " << yml_fn;
+    ostringstream m; m << "YMLConfig::parse: failed to initialize parser, file was " << yml_fn__;
     throw runtime_error(m.str());
   }
 
@@ -246,8 +253,8 @@ void YMLConfig::parse_file(const string& yml_fn, const vector<string>& pp_pathes
   /* Set input file */
   yaml_parser_set_input_file(&parser, fh);
 #else
-  YMLConfigPP pp(pp_pathes);
-  pp.run_pp(yml_fn);
+  YMLConfigPP pp(pp_pathes__);
+  pp.run_pp(yml_fn__);
   string pp_content; pp.get_pp_content(&pp_content);
   
   yaml_parser_set_input_string(&parser, (const unsigned char*)pp_content.c_str(), pp_content.size());
@@ -305,7 +312,7 @@ void YMLConfig::parse_file(const string& yml_fn, const vector<string>& pp_pathes
 	cout << "YAML_NO_TOKEN" << endl;
       }
       if (!dry_run) {
-	ostringstream m; m << "YMLConfig::parse: YAML_NO_TOKEN -- error in file " << yml_fn;
+	ostringstream m; m << "YMLConfig::parse: YAML_NO_TOKEN -- error in file " << yml_fn__;
 	throw runtime_error(m.str());
       }
       break;
@@ -315,7 +322,7 @@ void YMLConfig::parse_file(const string& yml_fn, const vector<string>& pp_pathes
       }
       if (!dry_run) {
 	cout << "Got token of type " << token.type << endl;
-	ostringstream m; m << "YMLConfig::parse: got token of type " << token.type << ", file was " << yml_fn;
+	ostringstream m; m << "YMLConfig::parse: got token of type " << token.type << ", file was " << yml_fn__;
 	throw runtime_error(m.str());
       }
       break;

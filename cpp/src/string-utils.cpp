@@ -149,14 +149,14 @@ string evaluate_dollar_var_expr(const string& dv_expr)
   res = regex_replace(res, regex("\\$\\{top-dir\\}"), top_dir.string());
 
   fs::path l_etc_dir = top_dir / "etc";
-  fs::path upper_etc_dir = top_dir.parent_path() / "etc";
-  int f = int(fs::exists(l_etc_dir));
-  f = f + int(fs::exists(upper_etc_dir));
-  if (f > 1) {
+  fs::path upper_etc_dir = fs::absolute(top_dir / ".." / "etc");
+  bool l_etc_dir_f = fs::exists(l_etc_dir);
+  bool upper_etc_dir_f = fs::exists(upper_etc_dir);
+  if (l_etc_dir_f && upper_etc_dir_f) {
     throw runtime_error("both ${top-dir}/etc and ${top-dir}/../etc exists");
   }
 
-  auto etc_dir = fs::exists(l_etc_dir) ? l_etc_dir : upper_etc_dir;
+  auto etc_dir = l_etc_dir_f ? l_etc_dir : upper_etc_dir;
   res = regex_replace(res, regex("\\$\\{etc-dir\\}"), etc_dir.string());
   return res;
 }

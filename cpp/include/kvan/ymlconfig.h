@@ -41,16 +41,19 @@ class YMLConfig {
   
   void handle_YAML_BLOCK_MAPPING_START_TOKEN(yaml_parser_t*);
   void handle_YAML_BLOCK_SEQUENCE_START_TOKEN(yaml_parser_t*);
+
+  vector<string> pp_pathes;
   
 public:
   explicit YMLConfig(bool debug = false, bool dry_run = false);
-  
-  void parse_file(const string& yml_fn, const vector<string>& pp_pathes);
-  void parse(const string& yml, const vector<string>& pp_pathes);
+  void set_pp_pathes(const vector<string>& pp_pathes);
+  void parse(const string& yml);
   
   std::string get(const char* path) const;
   YMLConfig get_config(const char* path) const;  
   void dump() const;
+
+  void parse_file__(const string& yml_fn, const vector<string>& pp_pathes);
 };
 
 #endif

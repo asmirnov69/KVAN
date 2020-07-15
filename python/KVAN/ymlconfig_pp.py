@@ -12,6 +12,7 @@ class YMLConfigPP:
     def find_yml_file(self, yml):
         ret = None
         for pp_path in self.pp_pathes:
+            print("pp_path: ", pp_path)
             yml_fn = os.path.join(pp_path, yml)
             if os.path.exists(yml_fn):
                 ret = yml_fn
@@ -39,7 +40,7 @@ class YMLConfigPP:
         self.out_fd.write(f"# end of file {yml_fn}\n")
 
     def process_include(self, include_line):
-        include_re = r"!include\s+([\w+/\.\-]+)"
+        include_re = r"!include\s+<([\w+/\.\-]+)>"
 
         m = re.match(include_re, include_line)
         if m == None or len(m.groups()) != 1:

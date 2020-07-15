@@ -30,7 +30,7 @@ TopDirImpl::TopDirImpl(const char* marker_file)
       marker_file_found = true;
       break;
     }
-    c_dir = fs::canonical(c_dir / "..");
+    c_dir = fs::absolute(c_dir / "..");
   } while (c_dir != fs::path("/") && fs::exists(c_dir));
 
   if (!marker_file_found) {

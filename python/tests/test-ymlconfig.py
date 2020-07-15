@@ -16,7 +16,7 @@ def parse_yml_file(yml_fn, pp_pathes):
     """
     this is a test of yml config
     """
-    config.parse_file(yml_fn, pp_pathes)
+    config.parse_file__(yml_fn, pp_pathes)
     print(config.as_json())
     #ipdb.set_trace()
     print("\n".join([".".join(l) for l in config.get_compound_keys()]))
@@ -33,5 +33,5 @@ def use_config():
     config.pprint();
     
 if __name__ == "__main__":
-    config.parse("test-config.yml", [".", "${top-dir}/test-ymlconfig-files"])
+    config.parse("test-config.yml")
     fuargs.exec_actions(sys.argv[1:])

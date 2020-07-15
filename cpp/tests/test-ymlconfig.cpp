@@ -25,7 +25,7 @@ ADD_ACTION("parse_yml_file[yml_fn,pp_pathes]", [](const Fuargs::args& args) {
     cout << "pp_pathes: " << string_join(pp_pathes, ';') << endl;
 
     YMLConfig conf;
-    conf.parse_file(yml_fn, pp_pathes);
+    conf.parse_file__(yml_fn, pp_pathes);
     cout << "parse complete" << endl;
     conf.dump();
     cout << "--------" << endl;
@@ -47,7 +47,7 @@ ADD_ACTION(parse_yml_proto, [](const Fuargs::args& args) {
     }
     
     YMLConfig conf;
-    conf.parse_file(yml_fn.first, pp_pathes);
+    conf.parse_file__(yml_fn.first, pp_pathes);
     cout << "parse complete" << endl;
     conf.dump();
     cout << "--------" << endl;

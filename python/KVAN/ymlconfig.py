@@ -100,18 +100,28 @@ def namedtuple_asdict(obj):
 class Config:
     def __init__(self):
         self.config = None
+        self.pp_pathes = [".", evaluate_dollar_var_expr("${etc-dir}")]
 
-    def parse_file(self, conf_file, pp_pathes):
+    def parse_file__(self, conf_file, pp_pathes):
         cr = ConfigReader()
         self.config = cr.read(conf_file, pp_pathes)
 
-    def parse(self, conf_yml, pp_pathes):
-        pp = YMLConfigPP(pp_pathes)
+    def parse(self, conf_yml):
+        pp = YMLConfigPP(self.pp_pathes)
         conf_file = pp.find_yml_file(conf_yml)
         if conf_file == None:
             raise Exception(f"Config::parse: can't find yml file {conf_yml}")
-        self.parse_file(conf_file, pp_pathes)
-        
+        self.parse_file__(conf_file, self.pp_pathes)
+
+    def get(self, k):
+        #import ipdb
+        k_s = k.split(".")
+        n = self
+        #ipdb.set_trace()
+        for kp in k_s:
+            n = getattr(n, kp)
+        return n
+            
     def __getattr__(self, an):
         if hasattr(self.config, an):
             return self.config.__getattribute__(an)

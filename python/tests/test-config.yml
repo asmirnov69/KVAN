@@ -1,4 +1,4 @@
-!include ymls/test-yml.yml
+!include <ymls/test-yml.yml>
 # comment
 
 a: 1

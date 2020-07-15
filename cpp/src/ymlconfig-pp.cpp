@@ -21,6 +21,7 @@ pair<string, bool> YMLConfigPP::find_yml_file(const string& yml_fn)
     yml_pn = pp_path;
     yml_pn += "/";
     yml_pn += yml_fn;
+    yml_pn = evaluate_dollar_var_expr(yml_pn);
     if (fs::exists(yml_pn)) {
       return make_pair(yml_pn, true);
     }
@@ -30,7 +31,7 @@ pair<string, bool> YMLConfigPP::find_yml_file(const string& yml_fn)
 
 void YMLConfigPP::process_include(const string& include_line)
 {
-  regex re(R"D(!include\s+([\w/\.\-]+))D");
+  regex re(R"D(!include\s+\<([\w/\.\-]+)\>)D");
 
   smatch m;
   regex_search(include_line, m, re);

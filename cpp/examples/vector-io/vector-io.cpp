@@ -179,10 +179,46 @@ ADD_ACTION("read_csv[fn]", [](const Fuargs::args& args) {
 
     vector<Person> persons;
     from_csv(&persons, in);
+    cout << "persons size: " << persons.size() << endl;
     cout << to_json_dataframe(persons).second << endl;
 
     return true;
   });
+
+struct Ticker
+{
+  int sid{-1};
+  string ticker;
+  string name;
+  string sector;
+};
+
+template <>
+StructDescriptor get_struct_descriptor<Ticker>() {
+  StructDescriptor sd;
+  sd.add_member("ticker", &Ticker::ticker);
+  sd.add_member("name", &Ticker::name);
+  sd.add_member("sector", &Ticker::sector);
+  return sd;
+}
+
+ADD_ACTION("read_tickers_csv[fn]", [](const Fuargs::args& args) {
+    string fn = args.get("fn");
+    ifstream in(fn);
+    if (!in) {
+      cerr << "can't open file " << fn << endl;
+      return false;
+    }
+
+    vector<Ticker> tickers;
+    from_csv(&tickers, in);
+    cout << "tickers size: " << tickers.size() << endl;
+    cout << to_json_dataframe(tickers).second << endl;
+
+    return true;
+  });
+
+
 
 int main(int argc, char** argv)
 {
