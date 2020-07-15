@@ -8,10 +8,24 @@ using namespace std;
 #include <kvan/struct-descriptor.h>
 
 template <class T>
-inline string to_json(const vector<T>& v)
+inline void to_json(ostream& out, const T& v)
 {
   StructDescriptor psd = get_struct_descriptor<T>();
-  return "";
+  psd.to_json(out, v);
+}
+
+template <class T>
+inline void to_json(ostream& out, const vector<T>& v)
+{
+  StructDescriptor psd = get_struct_descriptor<T>();
+  out << "[";
+  for (size_t i = 0; i < v.size(); ++i) {
+    psd.to_json(out, v[i]);
+    if (i + 1 < v.size()) {
+      out << ", ";
+    }
+  }
+  out << "]";
 }
 
 #endif

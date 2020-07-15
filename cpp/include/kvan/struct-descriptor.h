@@ -31,11 +31,14 @@ public:
     this->member_name = member_name;
   }
 
-  virtual void collect_value_pathes__(ValuePath* curr_vpath, vector<ValuePath>* out) = 0;
-  virtual void collect_values__(const any&, ValuePath* curr_vpath, vector<ValuePathValue>* out) = 0;
+  virtual void collect_value_pathes__(ValuePath* curr_vpath,
+				      vector<ValuePath>* out) = 0;
+  virtual void collect_values__(const any&, ValuePath* curr_vpath,
+				vector<ValuePathValue>* out) = 0;
   virtual void set_value__(void* o, const string& new_value,
 			   const ValuePath& path,
 			   int curr_member_index) = 0;
+  virtual void to_json__(ostream& out, const any& o) = 0;
 };
 
 // from https://stackoverflow.com/a/57812868/1181482
@@ -129,7 +132,94 @@ public:
       throw runtime_error(ex.what());      
     }
   }
+
+  void to_json__(ostream& out, const any& o) override {
+    try {
+      const T& obj = any_cast<T>(o);
+      const MT& member_v = obj.*mptr;
+      
+      out << "\"" << member_name << "\": ";
+      if constexpr(is_enum<MT>::value) {
+	  out << "\"" + get_enum_value_string<MT>(member_v) + "\"";
+	} else if constexpr(is_string<MT>::value) {
+	  out << "\"" + member_v + "\"";
+	} else if constexpr(is_integral<MT>::value) {
+	  out << to_string(member_v);
+	} else if constexpr(is_floating_point<MT>::value) {
+	  out << to_string(member_v);
+	} else if constexpr(is_function<decltype(get_struct_descriptor<MT>)>::value) {
+	  auto m_sd = get_struct_descriptor<MT>();
+	  m_sd.to_json(out, member_v);
+	} else {
+	throw runtime_error(__func__);
+      }
+    } catch (const bad_any_cast& ex) {
+      throw runtime_error(ex.what());      
+    }
+  }
 };
+
+template <class MT, class T>
+class MemberDescriptorT<vector<MT>, T> : public MemberDescriptor
+{
+private:
+  vector<MT> T::*mptr;
+
+public:
+  MemberDescriptorT(const char* member_name, vector<MT> T::*mptr) :
+    MemberDescriptor(member_name)
+  {
+    this->mptr = mptr;
+  }
+
+  void collect_value_pathes__(ValuePath* curr_vpath,
+			      vector<ValuePath>* out) override {
+    throw runtime_error("not implemented");
+  }
+  void collect_values__(const any&, ValuePath* curr_vpath,
+			vector<ValuePathValue>* out) override {
+    throw runtime_error("not implemented");
+  }
+  
+  void set_value__(void* o, const string& new_value,
+		   const ValuePath& path,
+		   int curr_member_index) override {
+    throw runtime_error("not implemented");
+  }
+
+  void to_json__(ostream& out, const any& o) override {
+    try {
+      const T& obj = any_cast<T>(o);
+      auto& member_v = obj.*mptr;
+      out << "\"" << member_name << "\": [";
+      for (size_t i = 0; i < member_v.size(); i++) {
+	auto& v = member_v[i];
+	if constexpr(is_enum<MT>::value) {
+	  out << "\"" + get_enum_value_string<MT>(v) + "\"";
+	  } else if constexpr(is_string<MT>::value) {
+	    out << "\"" + v + "\"";
+	  } else if constexpr(is_integral<MT>::value) {
+	    out << to_string(v);
+	  } else if constexpr(is_floating_point<MT>::value) {
+	    out << to_string(v);
+	  } else if constexpr(is_function<decltype(get_struct_descriptor<MT>)>::value) {
+	    auto m_sd = get_struct_descriptor<MT>();
+	    m_sd.to_json(out, v);
+	  } else {
+	  throw runtime_error(__func__);
+	}
+	if (i + 1 < member_v.size()) {
+	  out << ", ";
+	}
+      }
+      out << "]";
+    } catch (const bad_any_cast& ex) {
+      throw runtime_error(ex.what());      
+    }
+  }
+
+};
+
 
 class StructDescriptor
 {
@@ -162,6 +252,16 @@ public:
     
     auto& md = member_descriptors[(*it).second];
     md->set_value__(o, new_value, path, curr_index);    
+  }
+
+  void to_json__(ostream& out, const any& o)
+  {
+    for (size_t i = 0; i < member_descriptors.size(); ++i) {
+      member_descriptors[i]->to_json__(out, o);
+      if (i + 1 < member_descriptors.size()) {
+	out << ", ";
+      }
+    }
   }
 
 public:
@@ -197,6 +297,13 @@ public:
   {
     auto path = string_split(path_s, '.');
     set_value__(o, new_value, path, 0);
+  }
+
+  void to_json(ostream& out, const any& o)
+  {
+    out << "{";
+    to_json__(out, o);
+    out << "}";
   }
 };
 

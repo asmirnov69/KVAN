@@ -10,131 +10,8 @@ using namespace std;
 #include <kvan/vector-fjson-io.h>
 #include <kvan/vector-json-io.h>
 
-template <class T> string get_enum_value_string(T);
-template <class T> void set_enum_value(T*, const string& new_value);
-
-enum class Salutation { MR, MRS, MS };
-template <> string get_enum_value_string<Salutation>(Salutation s) {
-  string ret;
-  switch (s) {
-  case Salutation::MR: ret = "Mr."; break;
-  case Salutation::MRS: ret = "Mrs."; break;
-  case Salutation::MS: ret = "Ms."; break;
-  }
-  return ret;
-}
-
-template <> void set_enum_value<Salutation>(Salutation* o, const string& new_v)
-{
-  if (new_v == "Mr.") {
-    *o = Salutation::MR;
-  } else if (new_v == "Mrs.") {
-    *o = Salutation::MRS;
-  } else if (new_v == "Ms.") {
-    *o = Salutation::MS;
-  } else {
-    ostringstream m; m << "unknown salutaion " << new_v;
-    throw runtime_error(m.str());
-  }
-}
-
-enum class State { MA, NY, CT, RI };
-template <> string get_enum_value_string<State>(State s) {
-  string ret;
-  switch (s) {
-  case State::NY: ret = "NY"; break;
-  case State::CT: ret = "CT"; break;
-  case State::MA: ret = "MA"; break;
-  case State::RI: ret = "RI"; break;
-  }
-  return ret;
-}
-template <> void set_enum_value<State>(State* o, const string& new_v)
-{
-  if (new_v == "NY") {
-    *o = State::NY;
-  } else if (new_v == "CT") {
-    *o = State::CT;
-  } else if (new_v == "MA") {
-    *o = State::MA;
-  } else if (new_v == "RI") {
-    *o = State::RI;
-  } else {
-    ostringstream m; m << "unknown state: " << new_v;
-    throw runtime_error(m.str());
-  }
-}
-
-struct FullName
-{
-  string first_name;
-  string last_name;
-  Salutation salutation;
-};
-template <>
-StructDescriptor get_struct_descriptor<FullName>()
-{
-  StructDescriptor sd;
-  sd.add_member("first_name", &FullName::first_name);
-  sd.add_member("last_name", &FullName::last_name);
-  sd.add_member("salutation", &FullName::salutation);
-  return sd;
-}
-
-struct Address
-{
-  string line1, line2;
-  string city;
-  State state;
-  string zip;
-};
-template <>
-StructDescriptor get_struct_descriptor<Address>()
-{
-  StructDescriptor sd;
-  sd.add_member("line1", &Address::line1);
-  sd.add_member("line2", &Address::line2);
-  sd.add_member("state", &Address::state);
-  sd.add_member("zip", &Address::zip);
-  return sd;
-}
-
-struct Contact
-{
-  string phone;
-  string email;
-};
-
-template <>
-inline StructDescriptor get_struct_descriptor<Contact>()
-{
-  StructDescriptor sd;
-  sd.add_member("email", &Contact::email);
-  sd.add_member("phone", &Contact::phone);
-  return sd;
-}
-
-struct Person
-{
-  FullName name;
-  Address address;
-  Contact c, backup_c;
-  int age;
-  double height;
-};
-
-template <>
-inline StructDescriptor get_struct_descriptor<Person>()
-{
-  StructDescriptor sd;
-  sd.add_member("name", &Person::name);
-  sd.add_member("address", &Person::address);
-  sd.add_member("c", &Person::c);
-  sd.add_member("backup_c", &Person::backup_c);
-  sd.add_member("age", &Person::age);
-  sd.add_member("height", &Person::height);
-  return sd;
-}
+#include "person.h"
+#include "ticker.h"
 
 Person p1{.name = FullName{.first_name = "John", .last_name = "Smith", .salutation = Salutation::MR},
     .address = Address{.line1 = "1 Main St", .line2 = "", .city = "New York", .state = State::NY, .zip = "10001"},
@@ -166,8 +43,22 @@ ADD_ACTION("write_json[]", [](const Fuargs::args&) {
     persons.push_back(p2);
     persons.push_back(p2);
     
-    auto json_s = to_json(persons);
-    cout << json_s << endl;
+    Band b;
+    b.name = "ura";
+    b.band_members = persons;
+    b.ws.push_back(1.0);
+    b.ws.push_back(2.0);
+    
+    //Parents pp;
+    //pp.parents.push_back(persons[0]);
+    //PersonSeq psq;
+    //psq.push_back(persons[0]);
+    //b.band_member_parents.push_back(psq);
+
+    ostringstream json_s;
+    //to_json(json_s, persons);
+    to_json(json_s, b);
+    cout << json_s.str() << endl;
     
     return true;
   });
@@ -199,22 +90,6 @@ ADD_ACTION("read_csv[fn]", [](const Fuargs::args& args) {
     return true;
   });
 
-struct Ticker
-{
-  int sid{-1};
-  string ticker;
-  string name;
-  string sector;
-};
-
-template <>
-StructDescriptor get_struct_descriptor<Ticker>() {
-  StructDescriptor sd;
-  sd.add_member("ticker", &Ticker::ticker);
-  sd.add_member("name", &Ticker::name);
-  sd.add_member("sector", &Ticker::sector);
-  return sd;
-}
 
 ADD_ACTION("read_tickers_csv[fn]", [](const Fuargs::args& args) {
     string fn = args.get("fn");
