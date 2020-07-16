@@ -51,9 +51,11 @@ ADD_ACTION("write_json[]", [](const Fuargs::args&) {
     
     //Parents pp;
     //pp.parents.push_back(persons[0]);
-    //PersonSeq psq;
-    //psq.push_back(persons[0]);
-    //b.band_member_parents.push_back(psq);
+    PersonSeq psq;
+    psq.push_back(persons[0]);
+    psq.push_back(persons[1]);
+    b.band_member_parents.push_back(psq);
+    b.band_member_parents.push_back(psq);
 
     ostringstream json_s;
     //to_json(json_s, persons);

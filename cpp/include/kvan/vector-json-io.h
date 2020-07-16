@@ -10,22 +10,25 @@ using namespace std;
 template <class T>
 inline void to_json(ostream& out, const T& v)
 {
-  StructDescriptor psd = get_struct_descriptor<T>();
-  psd.to_json(out, v);
-}
-
-template <class T>
-inline void to_json(ostream& out, const vector<T>& v)
-{
-  StructDescriptor psd = get_struct_descriptor<T>();
-  out << "[";
-  for (size_t i = 0; i < v.size(); ++i) {
-    psd.to_json(out, v[i]);
-    if (i + 1 < v.size()) {
-      out << ", ";
-    }
-  }
-  out << "]";
+  if constexpr(is_fundamental<T>::value) {
+      out << v;
+    } else if constexpr(is_vector<T>::value) {
+      out << "[";
+      for (size_t i = 0; i < v.size(); ++i) {
+	if constexpr(is_fundamental<typename T::value_type>::value) {
+	  out << v[i];
+	} else {
+	  to_json<typename T::value_type>(out, v[i]);
+	}
+	if (i + 1 < v.size()) {
+	  out << ", ";
+	}
+      }
+      out << "]";
+    } else {
+    StructDescriptor psd = get_struct_descriptor<T>();
+    psd.to_json(out, v);
+    }  
 }
 
 #endif

@@ -148,7 +148,7 @@ struct Band
 {
   string name;
   vector<Person> band_members;
-  //vector<PersonSeq> band_member_parents;
+  vector<PersonSeq> band_member_parents;
   vector<double> ws;
 };
 
@@ -158,7 +158,7 @@ inline StructDescriptor get_struct_descriptor<Band>()
   StructDescriptor sd;
   sd.add_member("name", &Band::name);
   sd.add_member("band_members", &Band::band_members);
-  //sd.add_member("band_member_parents", &Band::band_member_parents);
+  sd.add_member("band_member_parents", &Band::band_member_parents);
   sd.add_member("ws", &Band::ws);
   return sd;
 }

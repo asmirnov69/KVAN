@@ -23,6 +23,9 @@ template <class T> StructDescriptor get_struct_descriptor();
 typedef vector<string> ValuePath;
 typedef pair<ValuePath, string> ValuePathValue; // value path -> value
 
+template <class T> void to_json(ostream&, const T&);
+template <class T> void to_json(ostream&, const vector<T>&);
+
 class MemberDescriptor
 {
 public:
@@ -51,6 +54,10 @@ struct is_string
         > {
 };
 
+// https://stackoverflow.com/a/31105859/1181482
+template <typename T> struct is_vector: std::false_type {};
+template <typename... Args> struct is_vector<std::vector<Args...>> : std::true_type{};
+
 template <class MT, class T>
 class MemberDescriptorT : public MemberDescriptor
 {
@@ -71,11 +78,11 @@ public:
 	out->push_back(*curr_vpath);
     } else if constexpr(is_string<MT>::value) {
 	out->push_back(*curr_vpath);
-    } else if constexpr(is_integral<MT>::value) {
+    } else if constexpr(is_fundamental<MT>::value) {
 	out->push_back(*curr_vpath);
-    } else if constexpr(is_floating_point<MT>::value) {
-	out->push_back(*curr_vpath);
-    } else if constexpr(is_function<decltype(get_struct_descriptor<MT>)>::value) {
+      } else if constexpr(is_vector<MT>::value) {
+	throw runtime_error(__func__);
+      } else if constexpr(is_function<decltype(get_struct_descriptor<MT>)>::value) {
       auto sd = get_struct_descriptor<MT>();
       sd.collect_value_pathes__(curr_vpath, out);
     } else {
@@ -94,10 +101,10 @@ public:
 	set_enum_value<MT>(&member_v, new_value);
       } else if constexpr(is_string<MT>::value) {
 	member_v = new_value;
-      } else if constexpr(is_integral<MT>::value) {
+      } else if constexpr(is_fundamental<MT>::value) {
 	istringstream vin(new_value); vin >> member_v;
-      } else if constexpr(is_floating_point<MT>::value) {
-	istringstream vin(new_value); vin >> member_v;
+      } else if constexpr(is_vector<MT>::value) {
+	throw runtime_error(__func__);
       } else if constexpr(is_function<decltype(get_struct_descriptor<MT>)>::value) {
 	auto m_sd = get_struct_descriptor<MT>();
 	m_sd.set_value__(&member_v, new_value, path, curr_member_index + 1);
@@ -117,10 +124,10 @@ public:
 	  out->push_back(make_pair(*curr_vpath, "\"" + get_enum_value_string<MT>(member_v) + "\""));
       } else if constexpr(is_string<MT>::value) {
 	  out->push_back(make_pair(*curr_vpath, "\"" + member_v + "\""));
-      } else if constexpr(is_integral<MT>::value) {
+      } else if constexpr(is_fundamental<MT>::value) {
 	  out->push_back(make_pair(*curr_vpath, to_string(member_v)));
-      } else if constexpr(is_floating_point<MT>::value) {
-	  out->push_back(make_pair(*curr_vpath, to_string(member_v)));
+      } else if constexpr(is_vector<MT>::value) {
+	throw runtime_error(__func__);
       } else if constexpr(is_function<decltype(get_struct_descriptor<MT>)>::value) {
 	auto m_sd = get_struct_descriptor<MT>();
 	m_sd.collect_values__(member_v, curr_vpath, out);
@@ -143,10 +150,10 @@ public:
 	  out << "\"" + get_enum_value_string<MT>(member_v) + "\"";
 	} else if constexpr(is_string<MT>::value) {
 	  out << "\"" + member_v + "\"";
-	} else if constexpr(is_integral<MT>::value) {
-	  out << to_string(member_v);
-	} else if constexpr(is_floating_point<MT>::value) {
-	  out << to_string(member_v);
+	} else if constexpr(is_fundamental<MT>::value) {
+	  out << member_v;
+	} else if constexpr(is_vector<MT>::value) {
+	  to_json<MT>(out, member_v);
 	} else if constexpr(is_function<decltype(get_struct_descriptor<MT>)>::value) {
 	  auto m_sd = get_struct_descriptor<MT>();
 	  m_sd.to_json(out, member_v);
@@ -158,68 +165,6 @@ public:
     }
   }
 };
-
-template <class MT, class T>
-class MemberDescriptorT<vector<MT>, T> : public MemberDescriptor
-{
-private:
-  vector<MT> T::*mptr;
-
-public:
-  MemberDescriptorT(const char* member_name, vector<MT> T::*mptr) :
-    MemberDescriptor(member_name)
-  {
-    this->mptr = mptr;
-  }
-
-  void collect_value_pathes__(ValuePath* curr_vpath,
-			      vector<ValuePath>* out) override {
-    throw runtime_error("not implemented");
-  }
-  void collect_values__(const any&, ValuePath* curr_vpath,
-			vector<ValuePathValue>* out) override {
-    throw runtime_error("not implemented");
-  }
-  
-  void set_value__(void* o, const string& new_value,
-		   const ValuePath& path,
-		   int curr_member_index) override {
-    throw runtime_error("not implemented");
-  }
-
-  void to_json__(ostream& out, const any& o) override {
-    try {
-      const T& obj = any_cast<T>(o);
-      auto& member_v = obj.*mptr;
-      out << "\"" << member_name << "\": [";
-      for (size_t i = 0; i < member_v.size(); i++) {
-	auto& v = member_v[i];
-	if constexpr(is_enum<MT>::value) {
-	  out << "\"" + get_enum_value_string<MT>(v) + "\"";
-	  } else if constexpr(is_string<MT>::value) {
-	    out << "\"" + v + "\"";
-	  } else if constexpr(is_integral<MT>::value) {
-	    out << to_string(v);
-	  } else if constexpr(is_floating_point<MT>::value) {
-	    out << to_string(v);
-	  } else if constexpr(is_function<decltype(get_struct_descriptor<MT>)>::value) {
-	    auto m_sd = get_struct_descriptor<MT>();
-	    m_sd.to_json(out, v);
-	  } else {
-	  throw runtime_error(__func__);
-	}
-	if (i + 1 < member_v.size()) {
-	  out << ", ";
-	}
-      }
-      out << "]";
-    } catch (const bad_any_cast& ex) {
-      throw runtime_error(ex.what());      
-    }
-  }
-
-};
-
 
 class StructDescriptor
 {
@@ -256,12 +201,14 @@ public:
 
   void to_json__(ostream& out, const any& o)
   {
+    out << "{";
     for (size_t i = 0; i < member_descriptors.size(); ++i) {
       member_descriptors[i]->to_json__(out, o);
       if (i + 1 < member_descriptors.size()) {
 	out << ", ";
       }
     }
+    out << "}";
   }
 
 public:
@@ -301,9 +248,7 @@ public:
 
   void to_json(ostream& out, const any& o)
   {
-    out << "{";
     to_json__(out, o);
-    out << "}";
   }
 };
 
