@@ -23,9 +23,7 @@ template <class T> StructDescriptor get_struct_descriptor();
 typedef vector<string> ValuePath;
 typedef pair<ValuePath, string> ValuePathValue; // value path -> value
 
-template <class T> void to_json(ostream& out, const T& v) {
-  throw runtime_error(__func__);
-}
+template <class T> void to_json(ostream& out, const T& v);
 
 class MemberDescriptor
 {

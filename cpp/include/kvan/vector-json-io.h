@@ -37,4 +37,6 @@ inline void to_json(ostream& out, const T& v)
   }
 }
 
+vector<pair<string, string>> from_json(const string& json_s);
+
 #endif

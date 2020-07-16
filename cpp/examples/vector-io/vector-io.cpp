@@ -109,6 +109,23 @@ ADD_ACTION("read_tickers_csv[fn]", [](const Fuargs::args& args) {
     return true;
   });
 
+ADD_ACTION("read_json[fn]", [](const Fuargs::args& args) {
+    string fn = args.get("fn");
+    ifstream in(fn);
+    if (!in) {
+      cerr << "can't open file " << fn << endl;
+      return false;
+    }
+
+    stringstream json; json << in.rdbuf();
+
+    cout << "json: " << json.str() << endl;    
+
+    auto kvs = from_json(json.str());
+    
+    return true;
+  });
+
 int main(int argc, char** argv)
 {
   Fuargs::exec_actions(argc, argv);
