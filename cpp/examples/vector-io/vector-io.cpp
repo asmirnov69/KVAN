@@ -122,6 +122,10 @@ ADD_ACTION("read_json[fn]", [](const Fuargs::args& args) {
     cout << "json: " << json.str() << endl;    
 
     auto kvs = from_json(json.str());
+    cout << "kvs:" << endl;
+    for (auto& el: kvs) {
+      cout << el.first << ": " << el.second << endl;
+    }
     
     return true;
   });

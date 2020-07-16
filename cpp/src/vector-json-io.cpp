@@ -3,13 +3,15 @@
 
 struct parser_ctx {
   vector<pair<string, string>>* ret;
-  vector<pair<string, int>> curr_path;
+  typedef vector<int> mindex_t;
+  vector<pair<string, mindex_t>> curr_path; // member, index
 
   parser_ctx(vector<pair<string, string>>* ret) {
     this->ret = ret;
-    curr_path.push_back(make_pair("", -1));
+    curr_path.push_back(make_pair("", mindex_t()));
   }
   string get_curr_path();
+  string get_mindex(const mindex_t&);
   
   int process_null();
   int process_boolean(int boolean);
@@ -22,13 +24,31 @@ struct parser_ctx {
   int process_end_array();
 };
 
+string parser_ctx::get_mindex(const mindex_t& mi)
+{
+  ostringstream ret;
+  if (mi.size() == 1) {
+    ret << mi[0];
+  } else {
+    ret << "(";
+    for (size_t i = 0; i < mi.size(); i++) {
+      ret << mi[i];
+      if (i + 1 < mi.size()) {
+	ret << ",";
+      }
+    }
+    ret << ")";
+  }
+  return ret.str();
+}
+
 string parser_ctx::get_curr_path()
 {
   ostringstream out;
   for (size_t i = 0; i < curr_path.size(); i++) {
     out << curr_path[i].first;
-    if (curr_path[i].second >= 0) {
-      out << "[" << curr_path[i].second << "]";
+    if (curr_path[i].second.size() > 0) {
+      out << "[" << get_mindex(curr_path[i].second) << "]";
     }
     if (i + 1 < curr_path.size()) {
       out << ".";
@@ -39,70 +59,84 @@ string parser_ctx::get_curr_path()
 
 int parser_ctx::process_null()
 {
-  cout << __func__ << endl;
+  //cout << __func__ << endl;
+  //cout << get_curr_path() << ": " << "null" << endl;
+  ret->push_back(make_pair(get_curr_path(), "")); // null is empty string
   return 1;
 }
 
 int parser_ctx::process_boolean(int b)
 {
   //cerr << "parser_ctx::process_boolean: " << b << endl;
-  cout << __func__ << endl;
-  cout << get_curr_path() << ": " << b << endl;
-  if (curr_path.back().second >= 0) { curr_path.back().second++; }
+  //cout << __func__ << endl;
+  //cout << get_curr_path() << ": " << b << endl;
+  ret->push_back(make_pair(get_curr_path(), to_string(b)));
+  if (curr_path.back().second.size() > 0) {
+    curr_path.back().second.back()++;
+  }
   return 1;
 }
 
 int parser_ctx::process_number(const string& n)
 {
-  cout << __func__ << endl;
-  cout << get_curr_path() << ": " << n << endl;
-  if (curr_path.back().second >= 0) { curr_path.back().second++; }
+  //cout << __func__ << endl;
+  //cout << get_curr_path() << ": " << n << endl;
+  ret->push_back(make_pair(get_curr_path(), n));
+  if (curr_path.back().second.size() > 0) {
+    curr_path.back().second.back()++;
+  }
   return 1;
 }
 
 int parser_ctx::process_string(const string& s)
 {
-  cout << __func__ << endl;
-  cout << get_curr_path() << ": " << s << endl;
-  if (curr_path.back().second >= 0) { curr_path.back().second++; }
+  //cout << __func__ << endl;
+  //cout << get_curr_path() << ": " << s << endl;
+  ret->push_back(make_pair(get_curr_path(), s));
+  if (curr_path.back().second.size() > 0) {
+    curr_path.back().second.back()++;
+  }
   return 1;
 }
 
 int parser_ctx::process_map_key(const string& k)
 {
-  cerr << __func__ << " " << get_curr_path() << endl;
+  //cerr << __func__ << " " << get_curr_path() << endl;
   curr_path.back().first = k;
   return 1;
 }
   
 int parser_ctx::process_start_map()
 {
-  cerr << __func__ << " " << get_curr_path() << endl;
-  curr_path.push_back(make_pair("", -1));
+  //cerr << __func__ << " " << get_curr_path() << endl;
+  curr_path.push_back(make_pair("", mindex_t()));
   return 1;
 }
 
 int parser_ctx::process_end_map()
 {
-  cerr << __func__ << " " << get_curr_path() << endl;
+  //cerr << __func__ << " " << get_curr_path() << endl;
   curr_path.pop_back();
-  if (curr_path.back().second >= 0) {
-    curr_path.back().second++;
+  if (curr_path.back().second.size() > 0) {
+    curr_path.back().second.back()++;
   }
   return 1;
 }
 
 int parser_ctx::process_start_array()
 {
-  cerr << __func__ << " " << get_curr_path() << endl;
-  curr_path.back().second = 0;
+  //cerr << __func__ << " " << get_curr_path() << endl;
+  curr_path.back().second.push_back(0);
   return 1;
 } 
 
 int parser_ctx::process_end_array()
 {
-  cerr << __func__ << " " << get_curr_path() << endl;
-  curr_path.back().second = -1;
+  //cerr << __func__ << " " << get_curr_path() << endl;
+  curr_path.back().second.pop_back();
+  if (curr_path.back().second.size() > 0) {
+    curr_path.back().second.back()++;
+  }    
   return 1;
 }
 
