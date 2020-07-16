@@ -8,6 +8,7 @@ using namespace std;
 #include <kvan/struct-descriptor.h>
 
 string to_csv_string(const vector<ValuePathValue>& j);
+vector<string> parse_csv_line(const string& line);
 
 template <class T>
 inline void to_csv(ostream& out, const vector<T>& v)
