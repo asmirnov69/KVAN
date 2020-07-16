@@ -23,8 +23,7 @@ template <class T> StructDescriptor get_struct_descriptor();
 typedef vector<string> ValuePath;
 typedef pair<ValuePath, string> ValuePathValue; // value path -> value
 
-template <class T> void to_json(ostream&, const T&);
-template <class T> void to_json(ostream&, const vector<T>&);
+template <class T> void to_json(ostream& out, const T& v);
 
 class MemberDescriptor
 {
@@ -144,22 +143,8 @@ public:
     try {
       const T& obj = any_cast<T>(o);
       const MT& member_v = obj.*mptr;
-      
       out << "\"" << member_name << "\": ";
-      if constexpr(is_enum<MT>::value) {
-	  out << "\"" + get_enum_value_string<MT>(member_v) + "\"";
-	} else if constexpr(is_string<MT>::value) {
-	  out << "\"" + member_v + "\"";
-	} else if constexpr(is_fundamental<MT>::value) {
-	  out << member_v;
-	} else if constexpr(is_vector<MT>::value) {
-	  to_json<MT>(out, member_v);
-	} else if constexpr(is_function<decltype(get_struct_descriptor<MT>)>::value) {
-	  auto m_sd = get_struct_descriptor<MT>();
-	  m_sd.to_json(out, member_v);
-	} else {
-	throw runtime_error(__func__);
-      }
+      to_json<MT>(out, member_v);
     } catch (const bad_any_cast& ex) {
       throw runtime_error(ex.what());      
     }
