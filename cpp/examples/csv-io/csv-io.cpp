@@ -8,6 +8,7 @@ using namespace std;
 #include <kvan/fuargs.h>
 #include <kvan/csv-io.h>
 #include <kvan/fjson-io.h>
+#include <kvan/json-io.h>
 
 #include "person.h"
 #include "ticker.h"

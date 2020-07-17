@@ -8,14 +8,10 @@ using namespace std;
 
 #include <kvan/addl-type-traits.h>
 #include <kvan/enum-io.h>
-
-class StructDescriptor;
-class MemberDescriptor;
-
-template <class T> StructDescriptor get_struct_descriptor();
+#include <kvan/struct-descriptor.h>
 
 void to_json(ostream& out, const any& o, const StructDescriptor&);
-void to_json(ostream& out, const any& o, const MemberDescriptor&);
+vector<pair<string, string>> from_json(const string& json_s);
 
 template <class T> inline
 void to_json(ostream& out, const T& v)
@@ -41,11 +37,23 @@ void to_json(ostream& out, const T& v)
       out << "]";
     } else if constexpr(is_function<decltype(get_struct_descriptor<T>)>::value) {
       auto sd = get_struct_descriptor<T>();
-      sd.to_json(out, v);
+      to_json(out, v, sd);
     } else {
     throw runtime_error(__func__);
   }
 }
 
+template <class MT, class T>
+inline void MemberDescriptorT<MT, T>::to_json__(ostream& out, const any& o) const
+{
+  try {
+    out << "\"" << member_name << "\": ";
+    const T& obj = any_cast<T>(o);
+    const MT& member_v = obj.*mptr;
+    to_json<MT>(out, member_v);
+  } catch (const bad_any_cast& ex) {
+    throw runtime_error(ex.what());      
+  }
+}
 
 #endif

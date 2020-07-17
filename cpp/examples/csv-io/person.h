@@ -2,6 +2,11 @@
 #ifndef __KVAN_PERSON_HH__
 #define __KVAN_PERSON_HH__
 
+#include <sstream>
+using namespace std;
+
+#include <kvan/struct-descriptor.h>
+
 enum class Salutation { MR, MRS, MS };
 template <> inline string get_enum_value_string<Salutation>(Salutation s) {
   string ret;

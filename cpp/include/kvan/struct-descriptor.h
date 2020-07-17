@@ -36,8 +36,9 @@ public:
   virtual void set_value__(void* o, const string& new_value,
 			   const ValuePath& path,
 			   int curr_member_index) = 0;
-};
 
+  virtual void to_json__(ostream& out, const any& o) const = 0;
+};
 
 template <class MT, class T>
 class MemberDescriptorT : public MemberDescriptor
@@ -51,6 +52,8 @@ public:
   {
     this->mptr = mptr;
   }
+
+  void to_json__(ostream& out, const any& o) const override;
 
   void collect_value_pathes__(ValuePath* curr_vpath, vector<ValuePath>* out) override
   {
