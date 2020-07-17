@@ -1,0 +1,26 @@
+#include <kvan/json-io.h>
+#include <kvan/struct-descriptor.h>
+
+void to_json(ostream& out, const any& o, const StructDescriptor& sd)
+{
+  out << "{";
+  for (size_t i = 0; i < sd.member_descriptors.size(); ++i) {
+    sd.member_descriptors[i]->to_json__(out, o);
+    if (i + 1 < sd.member_descriptors.size()) {
+      out << ", ";
+    }
+  }
+  out << "}";
+}
+
+void to_json(ostream& out, const any& o, const MemberDescriptor* md)
+{
+  try {
+    const T& obj = any_cast<T>(o);
+    const MT& member_v = obj.*mptr;
+    out << "\"" << member_name << "\": ";
+    to_json<MT>(out, member_v);
+  } catch (const bad_any_cast& ex) {
+    throw runtime_error(ex.what());      
+  }
+}

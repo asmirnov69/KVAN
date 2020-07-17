@@ -1,14 +1,24 @@
 // -*- c++ -*-
-#ifndef __KVAN_VECTOR_JSON_IO__HH__
-#define __KVAN_VECTOR_JSON_IO__HH__
+#ifndef __KVAN_JSON_IO_HH__
+#define __KVAN_JSON_IO_HH__
 
 #include <iostream>
+#include <any>
 using namespace std;
 
-#include <kvan/struct-descriptor.h>
+#include <kvan/addl-type-traits.h>
+#include <kvan/enum-io.h>
 
-template <class T>
-inline void to_json(ostream& out, const T& v)
+class StructDescriptor;
+class MemberDescriptor;
+
+template <class T> StructDescriptor get_struct_descriptor();
+
+void to_json(ostream& out, const any& o, const StructDescriptor&);
+void to_json(ostream& out, const any& o, const MemberDescriptor&);
+
+template <class T> inline
+void to_json(ostream& out, const T& v)
 {
   if constexpr(is_enum<T>::value) {
       out << "\"" + get_enum_value_string<T>(v) + "\"";
@@ -37,6 +47,5 @@ inline void to_json(ostream& out, const T& v)
   }
 }
 
-vector<pair<string, string>> from_json(const string& json_s);
 
 #endif

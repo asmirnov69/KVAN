@@ -1,0 +1,12 @@
+// -*- c++ -*-
+#ifndef __KVAN_VECTOR_JSON_IO__HH__
+#define __KVAN_VECTOR_JSON_IO__HH__
+
+#include <iostream>
+using namespace std;
+
+#include <kvan/struct-descriptor.h>
+
+vector<pair<string, string>> from_json(const string& json_s);
+
+#endif

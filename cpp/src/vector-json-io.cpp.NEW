@@ -230,5 +230,3 @@ vector<pair<string, string>> from_json(const string& json_s)
   yajl_free(hand);
   return ret;
 }
-  
-    

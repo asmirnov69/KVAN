@@ -8,7 +8,6 @@ using namespace std;
 #include <kvan/fuargs.h>
 #include <kvan/vector-csv-io.h>
 #include <kvan/vector-fjson-io.h>
-#include <kvan/vector-json-io.h>
 
 #include "person.h"
 #include "ticker.h"
@@ -33,34 +32,6 @@ ADD_ACTION("write_fjson[]", [](const Fuargs::args&) {
     copy(cols.begin(), cols.end(), ostream_iterator<string>(cerr, ","));
     cerr << endl;
     cout << json_df << endl;
-    
-    return true;
-  });
-
-ADD_ACTION("write_json[]", [](const Fuargs::args&) {
-    vector<Person> persons;
-    persons.push_back(p1);
-    persons.push_back(p2);
-    persons.push_back(p2);
-    
-    Band b;
-    b.name = "ura";
-    b.band_members = persons;
-    b.ws.push_back(1.0);
-    b.ws.push_back(2.0);
-    
-    //Parents pp;
-    //pp.parents.push_back(persons[0]);
-    PersonSeq psq;
-    psq.push_back(persons[0]);
-    psq.push_back(persons[1]);
-    b.band_member_parents.push_back(psq);
-    b.band_member_parents.push_back(psq);
-
-    ostringstream json_s;
-    //to_json(json_s, persons);
-    to_json(json_s, b);
-    cout << json_s.str() << endl;
     
     return true;
   });
@@ -109,29 +80,7 @@ ADD_ACTION("read_tickers_csv[fn]", [](const Fuargs::args& args) {
     return true;
   });
 
-ADD_ACTION("read_json[fn]", [](const Fuargs::args& args) {
-    string fn = args.get("fn");
-    ifstream in(fn);
-    if (!in) {
-      cerr << "can't open file " << fn << endl;
-      return false;
-    }
-
-    stringstream json; json << in.rdbuf();
-
-    cout << "json: " << json.str() << endl;    
-
-    auto kvs = from_json(json.str());
-    cout << "kvs:" << endl;
-    for (auto& el: kvs) {
-      cout << el.first << ": " << el.second << endl;
-    }
-    
-    return true;
-  });
-
 int main(int argc, char** argv)
 {
   Fuargs::exec_actions(argc, argv);
 }
-

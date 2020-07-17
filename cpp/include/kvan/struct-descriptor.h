@@ -8,26 +8,18 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <type_traits>
 #include <any>
 #include <initializer_list>
 using namespace std;
 
+#include <kvan/addl-type-traits.h>
+#include <kvan/enum-io.h>
 #include <kvan/string-utils.h>
 
 struct StructDescriptor;
-template <class T> string get_enum_value_string(T);
-template <class T> void set_enum_value(T*, const string& new_v) {
-  throw runtime_error(__func__);
-}
 template <class T> StructDescriptor get_struct_descriptor();
 typedef vector<string> ValuePath;
 typedef pair<ValuePath, string> ValuePathValue; // value path -> value
-
-template <class T> inline void to_json(ostream& out, const T& v)
-{
-  throw runtime_error(__func__);
-}
 
 class MemberDescriptor
 {
@@ -44,22 +36,8 @@ public:
   virtual void set_value__(void* o, const string& new_value,
 			   const ValuePath& path,
 			   int curr_member_index) = 0;
-  virtual void to_json__(ostream& out, const any& o) = 0;
 };
 
-// from https://stackoverflow.com/a/57812868/1181482
-template<typename T>
-struct is_string
-        : public std::disjunction<
-                std::is_same<char *, typename std::decay<T>::type>,
-                std::is_same<const char *, typename std::decay<T>::type>,
-                std::is_same<std::string, typename std::decay<T>::type>
-        > {
-};
-
-// https://stackoverflow.com/a/31105859/1181482
-template <typename T> struct is_vector: std::false_type {};
-template <typename... Args> struct is_vector<std::vector<Args...>> : std::true_type{};
 
 template <class MT, class T>
 class MemberDescriptorT : public MemberDescriptor
@@ -142,17 +120,6 @@ public:
       throw runtime_error(ex.what());      
     }
   }
-
-  void to_json__(ostream& out, const any& o) override {
-    try {
-      const T& obj = any_cast<T>(o);
-      const MT& member_v = obj.*mptr;
-      out << "\"" << member_name << "\": ";
-      to_json<MT>(out, member_v);
-    } catch (const bad_any_cast& ex) {
-      throw runtime_error(ex.what());      
-    }
-  }
 };
 
 template <class MT, class T> inline
@@ -163,8 +130,7 @@ shared_ptr<MemberDescriptor> make_member_descriptor(const char* n, MT T::* mptr)
 
 class StructDescriptor
 {
-public:
-  
+public:  
   void collect_value_pathes__(ValuePath* curr_vpath, vector<ValuePath>* out)
   {
     for (auto& m_descr: member_descriptors) {
@@ -193,18 +159,6 @@ public:
     
     auto& md = member_descriptors[(*it).second];
     md->set_value__(o, new_value, path, curr_index);    
-  }
-
-  void to_json__(ostream& out, const any& o)
-  {
-    out << "{";
-    for (size_t i = 0; i < member_descriptors.size(); ++i) {
-      member_descriptors[i]->to_json__(out, o);
-      if (i + 1 < member_descriptors.size()) {
-	out << ", ";
-      }
-    }
-    out << "}";
   }
 
 public:
@@ -239,11 +193,6 @@ public:
   {
     auto path = string_split(path_s, '.');
     set_value__(o, new_value, path, 0);
-  }
-
-  void to_json(ostream& out, const any& o)
-  {
-    to_json__(out, o);
   }
 };
 
