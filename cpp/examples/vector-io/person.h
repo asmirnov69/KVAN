@@ -66,10 +66,11 @@ struct FullName
 template <>
 inline StructDescriptor get_struct_descriptor<FullName>()
 {
-  StructDescriptor sd;
-  sd.add_member("first_name", &FullName::first_name);
-  sd.add_member("last_name", &FullName::last_name);
-  sd.add_member("salutation", &FullName::salutation);
+  static const StructDescriptor sd = {
+    make_member_descriptor("first_name", &FullName::first_name),
+    make_member_descriptor("last_name", &FullName::last_name),
+    make_member_descriptor("salutation", &FullName::salutation)
+  };
   return sd;
 }
 
@@ -84,11 +85,12 @@ struct Address
 template <>
 inline StructDescriptor get_struct_descriptor<Address>()
 {
-  StructDescriptor sd;
-  sd.add_member("line1", &Address::line1);
-  sd.add_member("line2", &Address::line2);
-  sd.add_member("state", &Address::state);
-  sd.add_member("zip", &Address::zip);
+  static const StructDescriptor sd = {
+    make_member_descriptor("line1", &Address::line1),
+    make_member_descriptor("line2", &Address::line2),
+    make_member_descriptor("state", &Address::state),
+    make_member_descriptor("zip", &Address::zip)
+  };
   return sd;
 }
 
@@ -101,9 +103,10 @@ struct Contact
 template <>
 inline StructDescriptor get_struct_descriptor<Contact>()
 {
-  StructDescriptor sd;
-  sd.add_member("email", &Contact::email);
-  sd.add_member("phone", &Contact::phone);
+  static const StructDescriptor sd = {
+    make_member_descriptor("email", &Contact::email),
+    make_member_descriptor("phone", &Contact::phone)
+  };
   return sd;
 }
 
@@ -119,13 +122,14 @@ struct Person
 template <>
 inline StructDescriptor get_struct_descriptor<Person>()
 {
-  StructDescriptor sd;
-  sd.add_member("name", &Person::name);
-  sd.add_member("address", &Person::address);
-  sd.add_member("c", &Person::c);
-  sd.add_member("backup_c", &Person::backup_c);
-  sd.add_member("age", &Person::age);
-  sd.add_member("height", &Person::height);
+  static const StructDescriptor sd = {
+    make_member_descriptor("name", &Person::name),
+    make_member_descriptor("address", &Person::address),
+    make_member_descriptor("c", &Person::c),
+    make_member_descriptor("backup_c", &Person::backup_c),
+    make_member_descriptor("age", &Person::age),
+    make_member_descriptor("height", &Person::height)
+  };
   return sd;
 }
 
@@ -137,8 +141,9 @@ struct Parents
 template <>
 inline StructDescriptor get_struct_descriptor<Parents>()
 {
-  StructDescriptor sd;
-  sd.add_member("parents", &Parents::parents);
+  static const StructDescriptor sd = {
+    make_member_descriptor("parents", &Parents::parents)
+  };
   return sd;
 }
 
@@ -155,11 +160,12 @@ struct Band
 template <>
 inline StructDescriptor get_struct_descriptor<Band>()
 {
-  StructDescriptor sd;
-  sd.add_member("name", &Band::name);
-  sd.add_member("band_members", &Band::band_members);
-  sd.add_member("band_member_parents", &Band::band_member_parents);
-  sd.add_member("ws", &Band::ws);
+  static const StructDescriptor sd = {
+    make_member_descriptor("name", &Band::name),
+    make_member_descriptor("band_members", &Band::band_members),
+    make_member_descriptor("band_member_parents", &Band::band_member_parents),
+    make_member_descriptor("ws", &Band::ws)
+  };
   return sd;
 }
 

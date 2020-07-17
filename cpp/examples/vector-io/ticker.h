@@ -12,12 +12,13 @@ struct Ticker
   string sector;
 };
 
-template <>
+template <> inline
 StructDescriptor get_struct_descriptor<Ticker>() {
-  StructDescriptor sd;
-  sd.add_member("ticker", &Ticker::ticker);
-  sd.add_member("name", &Ticker::name);
-  sd.add_member("sector", &Ticker::sector);
+  static const StructDescriptor sd = {
+    make_member_descriptor("ticker", &Ticker::ticker),
+    make_member_descriptor("name", &Ticker::name),
+    make_member_descriptor("sector", &Ticker::sector)
+  };
   return sd;
 }
 

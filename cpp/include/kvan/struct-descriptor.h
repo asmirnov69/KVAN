@@ -10,6 +10,7 @@
 #include <memory>
 #include <type_traits>
 #include <any>
+#include <initializer_list>
 using namespace std;
 
 #include <kvan/string-utils.h>
@@ -23,7 +24,10 @@ template <class T> StructDescriptor get_struct_descriptor();
 typedef vector<string> ValuePath;
 typedef pair<ValuePath, string> ValuePathValue; // value path -> value
 
-template <class T> void to_json(ostream& out, const T& v);
+template <class T> inline void to_json(ostream& out, const T& v)
+{
+  throw runtime_error(__func__);
+}
 
 class MemberDescriptor
 {
@@ -151,9 +155,16 @@ public:
   }
 };
 
+template <class MT, class T> inline
+shared_ptr<MemberDescriptor> make_member_descriptor(const char* n, MT T::* mptr)
+{
+  return make_shared<MemberDescriptorT<MT, T>>(n, mptr);
+}
+
 class StructDescriptor
 {
 public:
+  
   void collect_value_pathes__(ValuePath* curr_vpath, vector<ValuePath>* out)
   {
     for (auto& m_descr: member_descriptors) {
@@ -197,18 +208,17 @@ public:
   }
 
 public:
+  StructDescriptor(initializer_list<shared_ptr<MemberDescriptor>> l) {
+    for (auto el: l) {
+      member_names.push_back(el->member_name);
+      member_lookup[el->member_name] = member_descriptors.size();
+      member_descriptors.push_back(el);
+    }
+  }
   vector<string> member_names;
-  vector<unique_ptr<MemberDescriptor>> member_descriptors;
+  vector<shared_ptr<MemberDescriptor>> member_descriptors;
   map<string, int> member_lookup;
   
-  template <class MT, class T>
-  void add_member(const char* member_name, MT T::*mptr)
-  {
-    member_names.push_back(member_name);
-    member_lookup[member_name] = member_descriptors.size();
-    member_descriptors.emplace_back(make_unique<MemberDescriptorT<MT, T>>(member_name, mptr));
-  }
-
   vector<ValuePath> get_value_pathes()
   {
     ValuePath path;
