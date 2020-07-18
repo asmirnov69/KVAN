@@ -46,6 +46,23 @@ public:
 vector<string> parse_csv_line(const string& line);
 
 template <class T> inline
+void to_csv(ostream& out, const vector<T>& v)
+{
+  auto sd = get_struct_descriptor<T>();
+  CSVColumnsVisitor cols_v;
+  LOBKey k;
+  sd.visit_members(&cols_v, &k, T());
+
+  out << cols_v.get_header() << endl;
+  for (auto& p: v) {
+    CSVVisitor csv_v(out, cols_v.cols);
+    LOBKey k;
+    sd.visit_members(&csv_v, &k, p);
+    out << endl;
+  }
+}
+
+template <class T> inline
 void from_csv(vector<T>* v, istream& in)
 {
   auto sd = get_struct_descriptor<T>();

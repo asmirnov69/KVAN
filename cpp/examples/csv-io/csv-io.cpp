@@ -35,22 +35,12 @@ ADD_ACTION("write_fjson[]", [](const Fuargs::args&) {
 
 ADD_ACTION("write_csv[]", [](const Fuargs::args&) {
     vector<Person> persons;
+#if 1
     persons.push_back(p1);
     persons.push_back(p2);
     persons.push_back(p2);
-
-    auto sd = get_struct_descriptor<Person>();
-    CSVColumnsVisitor cols_v;
-    LOBKey k;
-    sd.visit_members(&cols_v, &k, p1);
-
-    cout << cols_v.get_header() << endl;
-    for (auto& p: persons) {
-      CSVVisitor csv_v(cout, cols_v.cols);
-      LOBKey k;
-      sd.visit_members(&csv_v, &k, p);
-      cout << endl;
-    }
+#endif
+    to_csv<Person>(cout, persons);
     
     return true;
   });
