@@ -37,4 +37,14 @@ inline void from_json(T* obj, const string& json_s)
   }
 }
 
+template <class T>
+inline void to_json(ostream& out, const T& obj)
+{
+  auto sd = get_struct_descriptor<T>();
+  JSONVisitor json_visitor;
+  LOBKey k;
+  sd.visit_members(&json_visitor, &k, obj);    
+  out << json_visitor.out.str() << endl;
+}
+
 #endif

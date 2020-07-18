@@ -42,12 +42,8 @@ ADD_ACTION("write_json[]", [](const Fuargs::args&) {
     b.band_member_parents.push_back(psq);
     b.band_member_parents.push_back(psq);
 #endif
-    
-    auto sd = get_struct_descriptor<Band>();
-    JSONVisitor json_visitor;
-    LOBKey k;
-    sd.visit_members(&json_visitor, &k, b);    
-    cout << json_visitor.out.str() << endl;
+
+    to_json(cout, b);
     
     return true;
   });
