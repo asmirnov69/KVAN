@@ -24,4 +24,7 @@ public:
   void visit_end_array() override;  
 };
 
+vector<pair<string, string>> from_json(const string& json_s);
+
+
 #endif

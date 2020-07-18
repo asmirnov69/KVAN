@@ -4,7 +4,7 @@
 
 void JSONVisitor::visit_enum(const LOBKey& path, const string& enum_s)
 {
-  out << "\"" << path.back() << "\": " << enum_s;
+  out << "\"" << path.back() << "\": \"" << enum_s << "\"";
 }
 
 void JSONVisitor::visit_string(const LOBKey& path, const string& s)
@@ -14,7 +14,7 @@ void JSONVisitor::visit_string(const LOBKey& path, const string& s)
 
 void JSONVisitor::visit_fundamental(const LOBKey& path, const string& v)
 {
-  out << "\"" << path.back() << "\": " << v;
+  out << "\"" << path.back() << "\": \"" << v << "\"";
 } 
 
 void JSONVisitor::visit_start_map(const LOBKey& path)

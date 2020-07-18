@@ -4,26 +4,39 @@ using namespace std;
 #include <kvan/string-utils.h>
 #include <kvan/fjson-io.h>
 
-void to_fjson_line(ostream& out, const LOB& l)
+void FJSONVisitor::visit_enum(const LOBKey& path, const string& enum_s)
 {
-  out << "{";
-  for (auto it = l.begin(); it != l.end(); ++it) {
-    out << "\"" << string_join((*it).first, '.') << "\"";
-    out << ": " << (*it).second;
-    if (next(it) != l.end()) {
-      out << ", ";
-    }
-  }
-  out << "}";
+  out << "\"" << string_join(path, '.') << "\": \"" << enum_s << "\"";
 }
 
-void to_fjson(ostream& out, const vector<LOB>& v)
+void FJSONVisitor::visit_string(const LOBKey& path, const string& s)
 {
-  out << "[";
-  for (size_t i = 0; i < v.size(); i++) {
-    to_fjson_line(out, v[i]);
-    if (i+1 < v.size()) out << ",";
-  }
-  out << "]";
+  out << "\"" << string_join(path, '.') << "\": \"" << s << "\"";
+}
+
+void FJSONVisitor::visit_fundamental(const LOBKey& path, const string& v)
+{
+  out << "\"" << string_join(path, '.') << "\": " << v;
+}
+
+void FJSONVisitor::visit_start_map(const LOBKey& path)
+{
+}
+void FJSONVisitor::visit_end_map()
+{
+}
+
+void FJSONVisitor::visit_delimiter()
+{
+  out << ", ";
+}
+void FJSONVisitor::visit_start_array()
+{
+  throw runtime_error("not implemented");
+}
+
+void FJSONVisitor::visit_end_array()
+{
+  throw runtime_error("not implemented");
 }
 

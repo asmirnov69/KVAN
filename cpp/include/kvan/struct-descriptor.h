@@ -41,10 +41,6 @@ public:
     this->member_name = member_name;
   }
 
-  virtual void collect_value_pathes__(LOBKey* curr_vpath,
-				      vector<LOBKey>* out) = 0;
-  virtual void collect_values__(const any&, LOBKey* curr_vpath,
-				vector<LOBKeyValue>* out) = 0;
   virtual void set_value__(void* o, const string& new_value,
 			   const LOBKey& path,
 			   int curr_member_index) = 0;
@@ -69,26 +65,6 @@ public:
     this->mptr = mptr;
   }
 
-  void collect_value_pathes__(LOBKey* curr_vpath, vector<LOBKey>* out) override
-  {
-    curr_vpath->push_back(member_name);
-    if constexpr(is_enum<MT>::value) {
-	out->push_back(*curr_vpath);
-    } else if constexpr(is_string<MT>::value) {
-	out->push_back(*curr_vpath);
-    } else if constexpr(is_fundamental<MT>::value) {
-	out->push_back(*curr_vpath);
-      } else if constexpr(is_vector<MT>::value) {
-	throw runtime_error(__func__);
-      } else if constexpr(is_function<decltype(get_struct_descriptor<MT>)>::value) {
-      auto sd = get_struct_descriptor<MT>();
-      sd.collect_value_pathes__(curr_vpath, out);
-    } else {
-      throw runtime_error(__func__);
-    }
-    curr_vpath->pop_back();
-  }
-
   void set_value__(void* o, const string& new_value,
 		   const LOBKey& path, int curr_member_index) override
   {
@@ -109,35 +85,7 @@ public:
       } else {
 	throw runtime_error(__func__);
     }
-  }
-    
-  void collect_values__(const any& o, LOBKey* curr_vpath,
-			vector<LOBKeyValue>* out) override
-  {
-    try {
-      const T& obj = any_cast<T>(o);
-      const MT& member_v = obj.*mptr;
-
-      curr_vpath->push_back(member_name);
-      if constexpr(is_enum<MT>::value) {
-	  out->push_back(make_pair(*curr_vpath, "\"" + get_enum_value_string<MT>(member_v) + "\""));
-      } else if constexpr(is_string<MT>::value) {
-	  out->push_back(make_pair(*curr_vpath, "\"" + member_v + "\""));
-      } else if constexpr(is_fundamental<MT>::value) {
-	  out->push_back(make_pair(*curr_vpath, to_string(member_v)));
-      } else if constexpr(is_vector<MT>::value) {
-	throw runtime_error(__func__);
-      } else if constexpr(is_function<decltype(get_struct_descriptor<MT>)>::value) {
-	auto m_sd = get_struct_descriptor<MT>();
-	m_sd.collect_values__(member_v, curr_vpath, out);
-      } else {
-	throw runtime_error(__func__);
-      }
-      curr_vpath->pop_back();
-    } catch (const bad_any_cast& ex) {
-      throw runtime_error(ex.what());      
-    }
-  }
+  }    
 
   void visit_member_array_element(StructVisitor* visitor, LOBKey* curr_vpath, const any& o) override
   {
@@ -222,21 +170,6 @@ public:
     }
     sv->visit_end_map();
   }
-  
-  void collect_value_pathes__(LOBKey* curr_vpath, vector<LOBKey>* out)
-  {
-    for (auto& m_descr: member_descriptors) {
-      m_descr->collect_value_pathes__(curr_vpath, out);
-    }
-  }  
-
-  void collect_values__(const any& o, LOBKey* curr_vpath,
-			vector<LOBKeyValue>* out)
-  {
-    for (auto& m_descr: member_descriptors) {
-      m_descr->collect_values__(o, curr_vpath, out);
-    }
-  }
 
   void set_value__(void* o, const string& new_value,
 		   const LOBKey& path, size_t curr_index)
@@ -265,22 +198,6 @@ public:
   vector<shared_ptr<MemberDescriptor>> member_descriptors;
   map<string, int> member_lookup;
   
-  vector<LOBKey> get_value_pathes()
-  {
-    LOBKey path;
-    vector<LOBKey> pathes;
-    collect_value_pathes__(&path, &pathes);
-    return pathes;
-  }
-  
-  vector<LOBKeyValue> get_values(const any& o)
-  {
-    vector<LOBKeyValue> out;
-    LOBKey path;
-    collect_values__(o, &path, &out);
-    return out;
-  }
-
   void set_value(void* o, const LOBKey& path, const string& new_value)
   {
     set_value__(o, new_value, path, 0);
@@ -293,12 +210,6 @@ template <class T> inline void from_LOB(T* obj, const LOB& lob)
   for (auto& kv: lob) {
     sd.set_value(obj, kv.first, kv.second);
   }
-}
-    
-template <class T> inline void to_LOB(LOB* lob, const T& obj)
-{
-  auto sd = get_struct_descriptor<T>();
-  lob->set(sd.get_values(obj));
 }
 
 #endif

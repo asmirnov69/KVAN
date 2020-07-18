@@ -51,7 +51,6 @@ ADD_ACTION("write_json[]", [](const Fuargs::args&) {
     return true;
   });
 
-#if 0
 ADD_ACTION("read_json[fn]", [](const Fuargs::args& args) {
     string fn = args.get("fn");
     ifstream in(fn);
@@ -72,7 +71,6 @@ ADD_ACTION("read_json[fn]", [](const Fuargs::args& args) {
     
     return true;
   });
-#endif
 
 int main(int argc, char** argv)
 {

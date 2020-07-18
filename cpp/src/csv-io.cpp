@@ -1,5 +1,80 @@
 #include <kvan/csv-io.h>
 
+void CSVColumnsVisitor::visit_enum(const LOBKey& path, const string& enum_s)
+{
+  cols.push_back(path);
+}
+    
+void CSVColumnsVisitor::visit_string(const LOBKey& path, const string& s)
+{
+  cols.push_back(path);
+}
+
+void CSVColumnsVisitor::visit_fundamental(const LOBKey& path, const string& v)
+{
+  cols.push_back(path);
+}
+
+void CSVColumnsVisitor::visit_start_map(const LOBKey& path)
+{
+}
+  
+void CSVColumnsVisitor::visit_end_map()
+{
+}
+
+void CSVColumnsVisitor::visit_delimiter()
+{
+}
+
+void CSVColumnsVisitor::visit_start_array()
+{
+}
+
+void CSVColumnsVisitor::visit_end_array()
+{
+}
+
+// ...
+
+void CSVVisitor::visit_enum(const LOBKey& path, const string& enum_s)
+{
+  out << enum_s;
+}
+
+void CSVVisitor::visit_string(const LOBKey& path, const string& s)
+{
+  out << s;
+}
+
+void CSVVisitor::visit_fundamental(const LOBKey& path, const string& v)
+{
+  out << v;
+}
+
+void CSVVisitor::visit_start_map(const LOBKey& path)
+{
+}
+void CSVVisitor::visit_end_map()
+{
+}
+
+void CSVVisitor::visit_delimiter()
+{
+  out << ",";
+}
+void CSVVisitor::visit_start_array()
+{
+  throw runtime_error("not implemented");
+}
+
+void CSVVisitor::visit_end_array()
+{
+  throw runtime_error("not implemented");
+}
+
+// ....
+
 vector<string> parse_csv_line(const string& line)
 {
   enum class parser_state {

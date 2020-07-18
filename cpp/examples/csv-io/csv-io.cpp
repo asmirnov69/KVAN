@@ -21,21 +21,14 @@ Person p2{.name = FullName{.first_name = "Jim", .last_name = "Morrison", .saluta
        .c = Contact(), .backup_c = Contact(),
 	  .age = 27, .height = 1.8};
 
-
 ADD_ACTION("write_fjson[]", [](const Fuargs::args&) {
     vector<Person> persons;
     persons.push_back(p1);
     persons.push_back(p2);
     persons.push_back(p2);
 
-    vector<LOB> person_lobs;
-    for (auto& p: persons) {
-      LOB l; to_LOB(&l, p);
-      person_lobs.push_back(l);
-    }
-
-    to_fjson(cout, person_lobs);
-    cerr << endl;
+    to_fjson<Person>(cout, persons);
+    cout << endl;
     
     return true;
   });
@@ -45,16 +38,20 @@ ADD_ACTION("write_csv[]", [](const Fuargs::args&) {
     persons.push_back(p1);
     persons.push_back(p2);
     persons.push_back(p2);
-    
-    LOBVector person_lobs;
-    person_lobs.init(get_struct_descriptor<Person>().get_value_pathes());
+
+    auto sd = get_struct_descriptor<Person>();
+    CSVColumnsVisitor cols_v;
+    LOBKey k;
+    sd.visit_members(&cols_v, &k, p1);
+
+    cout << cols_v.get_header() << endl;
     for (auto& p: persons) {
-      LOB l; to_LOB(&l, p);
-      person_lobs.push_back(l);
+      CSVVisitor csv_v(cout, cols_v.cols);
+      LOBKey k;
+      sd.visit_members(&csv_v, &k, p);
+      cout << endl;
     }
     
-    to_csv(cout, person_lobs);
-
     return true;
   });
 
@@ -66,21 +63,14 @@ ADD_ACTION("read_csv[fn]", [](const Fuargs::args& args) {
       return false;
     }
 
-    LOBVector person_lobs;
-    from_csv(&person_lobs, in);
-
     vector<Person> persons;
-    for (auto& l: person_lobs) {
-      Person p; from_LOB(&p, l);
-      persons.emplace_back(p);
-    }
+    from_csv(&persons, in);
     
     cout << "persons size: " << persons.size() << endl;
-    //cout << to_fjson(persons).second << endl;
+    to_fjson(cout, persons); cout << endl;
 
     return true;
   });
-
 
 ADD_ACTION("read_tickers_csv[fn]", [](const Fuargs::args& args) {
     string fn = args.get("fn");
@@ -90,25 +80,12 @@ ADD_ACTION("read_tickers_csv[fn]", [](const Fuargs::args& args) {
       return false;
     }
 
-    LOBVector ticker_lobs;
-    from_csv(&ticker_lobs, in);    
     vector<Ticker> tickers;
-    for (auto& l: ticker_lobs) {
-      Ticker t; from_LOB(&t, l);
-      tickers.emplace_back(t);
-    }
-    cout << "tickers size: " << tickers.size() << endl;
-
-    {
-      vector<LOB> lv;
-      for (auto& t: tickers) {
-	LOB l; to_LOB(&l, t); lv.push_back(l);
-      }
-      ostringstream out;
-      to_fjson(out, lv);
-      cout << out.str() << endl;
-    }
+    from_csv(&tickers, in);
     
+    cout << "tickers size: " << tickers.size() << endl;
+    to_fjson(cout, tickers); cout << endl;
+
     return true;
   });
 
