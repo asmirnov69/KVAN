@@ -7,6 +7,7 @@ using namespace std;
 
 #include <kvan/fuargs.h>
 #include <kvan/json-io.h>
+#include <kvan/fjson-io.h>
 
 #include "../csv-io/person.h"
 
@@ -71,6 +72,28 @@ ADD_ACTION("read_json[fn]", [](const Fuargs::args& args) {
     
     return true;
   });
+
+ADD_ACTION("read_json_person[fn]", [](const Fuargs::args& args) {
+    string fn = args.get("fn");
+    ifstream in(fn);
+    if (!in) {
+      cerr << "can't open file " << fn << endl;
+      return false;
+    }
+
+    stringstream json; json << in.rdbuf();
+
+    cout << "json: " << json.str() << endl;    
+    Person p;
+    from_json(&p, json.str());
+
+    vector<Person> pp = {p};
+    to_fjson(cout, pp);
+    cout << endl;
+
+    return true;
+  });
+
 
 int main(int argc, char** argv)
 {

@@ -45,10 +45,6 @@ public:
 
 vector<string> parse_csv_line(const string& line);
 
-void to_csv_line(ostream&, const vector<LOBKey>& cols, const LOB& j);
-void to_csv(ostream& out, const LOBVector& lobs);
-void from_csv(LOBVector* lobs, istream& in);
-
 template <class T> inline
 void from_csv(vector<T>* v, istream& in)
 {

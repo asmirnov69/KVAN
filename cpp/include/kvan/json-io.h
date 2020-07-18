@@ -26,5 +26,15 @@ public:
 
 vector<pair<string, string>> from_json(const string& json_s);
 
+template <class T>
+inline void from_json(T* obj, const string& json_s)
+{
+  auto sd = get_struct_descriptor<T>();
+
+  auto values = from_json(json_s);
+  for (auto& v: values) {
+    sd.set_value(obj, string_split(v.first, '.'), v.second);
+  }
+}
 
 #endif

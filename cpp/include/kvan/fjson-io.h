@@ -7,8 +7,6 @@ using namespace std;
 
 #include <kvan/struct-descriptor.h>
 #include <kvan/csv-io.h>
-#include <kvan/lob.h>
-
 
 class FJSONVisitor : public StructVisitor
 {

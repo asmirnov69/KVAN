@@ -14,7 +14,7 @@ void JSONVisitor::visit_string(const LOBKey& path, const string& s)
 
 void JSONVisitor::visit_fundamental(const LOBKey& path, const string& v)
 {
-  out << "\"" << path.back() << "\": \"" << v << "\"";
+  out << "\"" << path.back() << "\": " << v;
 } 
 
 void JSONVisitor::visit_start_map(const LOBKey& path)

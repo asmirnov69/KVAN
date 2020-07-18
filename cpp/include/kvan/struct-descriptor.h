@@ -15,8 +15,8 @@ using namespace std;
 #include <kvan/addl-type-traits.h>
 #include <kvan/enum-io.h>
 #include <kvan/string-utils.h>
-#include <kvan/lob.h>
 
+typedef vector<string> LOBKey;
 struct StructDescriptor;
 template <class T> StructDescriptor get_struct_descriptor();
 
@@ -200,16 +200,8 @@ public:
   
   void set_value(void* o, const LOBKey& path, const string& new_value)
   {
-    set_value__(o, new_value, path, 0);
+    set_value__(o, new_value, path, 0); // or 1??
   }
 };
-
-template <class T> inline void from_LOB(T* obj, const LOB& lob)
-{
-  auto sd = get_struct_descriptor<T>();
-  for (auto& kv: lob) {
-    sd.set_value(obj, kv.first, kv.second);
-  }
-}
 
 #endif
