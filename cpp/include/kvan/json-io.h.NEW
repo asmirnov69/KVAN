@@ -1,0 +1,19 @@
+// -*- c++ -*-
+#ifndef __KVAN_JSON_IO_HH__
+#define __KVAN_JSON_IO_HH__
+
+#include <iostream>
+#include <any>
+using namespace std;
+
+#include <kvan/addl-type-traits.h>
+#include <kvan/enum-io.h>
+#include <kvan/struct-descriptor.h>
+
+void to_json(ostream& out, const vector<LOB>& lobs);
+void to_json(ostream& out, const LOB& lob);
+
+void from_json(LOB* lob, const string& json_s);
+void from_json(vector<LOB>* lobs, const string& json_s);
+
+#endif

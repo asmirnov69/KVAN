@@ -8,7 +8,6 @@ using namespace std;
 #include <kvan/fuargs.h>
 #include <kvan/csv-io.h>
 #include <kvan/fjson-io.h>
-#include <kvan/json-io.h>
 
 #include "person.h"
 #include "ticker.h"
@@ -28,11 +27,15 @@ ADD_ACTION("write_fjson[]", [](const Fuargs::args&) {
     persons.push_back(p1);
     persons.push_back(p2);
     persons.push_back(p2);
-    
-    auto [cols, json_df] = to_fjson(persons);
-    copy(cols.begin(), cols.end(), ostream_iterator<string>(cerr, ","));
+
+    vector<LOB> person_lobs;
+    for (auto& p: persons) {
+      LOB l; to_LOB(&l, p);
+      person_lobs.push_back(l);
+    }
+
+    to_fjson(cout, person_lobs);
     cerr << endl;
-    cout << json_df << endl;
     
     return true;
   });
@@ -42,9 +45,16 @@ ADD_ACTION("write_csv[]", [](const Fuargs::args&) {
     persons.push_back(p1);
     persons.push_back(p2);
     persons.push_back(p2);
+    
+    LOBVector person_lobs;
+    person_lobs.init(get_struct_descriptor<Person>().get_value_pathes());
+    for (auto& p: persons) {
+      LOB l; to_LOB(&l, p);
+      person_lobs.push_back(l);
+    }
+    
+    to_csv(cout, person_lobs);
 
-    ostringstream csv_s; to_csv(csv_s, persons);
-    cout << csv_s.str();
     return true;
   });
 
@@ -56,10 +66,17 @@ ADD_ACTION("read_csv[fn]", [](const Fuargs::args& args) {
       return false;
     }
 
+    LOBVector person_lobs;
+    from_csv(&person_lobs, in);
+
     vector<Person> persons;
-    from_csv(&persons, in);
+    for (auto& l: person_lobs) {
+      Person p; from_LOB(&p, l);
+      persons.emplace_back(p);
+    }
+    
     cout << "persons size: " << persons.size() << endl;
-    cout << to_fjson(persons).second << endl;
+    //cout << to_fjson(persons).second << endl;
 
     return true;
   });
@@ -73,11 +90,25 @@ ADD_ACTION("read_tickers_csv[fn]", [](const Fuargs::args& args) {
       return false;
     }
 
+    LOBVector ticker_lobs;
+    from_csv(&ticker_lobs, in);    
     vector<Ticker> tickers;
-    from_csv(&tickers, in);
+    for (auto& l: ticker_lobs) {
+      Ticker t; from_LOB(&t, l);
+      tickers.emplace_back(t);
+    }
     cout << "tickers size: " << tickers.size() << endl;
-    cout << to_fjson(tickers).second << endl;
 
+    {
+      vector<LOB> lv;
+      for (auto& t: tickers) {
+	LOB l; to_LOB(&l, t); lv.push_back(l);
+      }
+      ostringstream out;
+      to_fjson(out, lv);
+      cout << out.str() << endl;
+    }
+    
     return true;
   });
 

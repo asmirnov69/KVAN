@@ -1,6 +1,6 @@
 // -*- c++ -*-
-#ifndef __RQX_STRUCT_DESCRIPTOR__HH__
-#define __RQX_STRUCT_DESCRIPTOR__HH__
+#ifndef __KVAN_STRUCT_DESCRIPTOR__HH__
+#define __KVAN_STRUCT_DESCRIPTOR__HH__
 
 #include <sstream>
 #include <string>
@@ -15,11 +15,10 @@ using namespace std;
 #include <kvan/addl-type-traits.h>
 #include <kvan/enum-io.h>
 #include <kvan/string-utils.h>
+#include <kvan/lob.h>
 
 struct StructDescriptor;
 template <class T> StructDescriptor get_struct_descriptor();
-typedef vector<string> ValuePath;
-typedef pair<ValuePath, string> ValuePathValue; // value path -> value
 
 class MemberDescriptor
 {
@@ -29,15 +28,13 @@ public:
     this->member_name = member_name;
   }
 
-  virtual void collect_value_pathes__(ValuePath* curr_vpath,
-				      vector<ValuePath>* out) = 0;
-  virtual void collect_values__(const any&, ValuePath* curr_vpath,
-				vector<ValuePathValue>* out) = 0;
+  virtual void collect_value_pathes__(LOBKey* curr_vpath,
+				      vector<LOBKey>* out) = 0;
+  virtual void collect_values__(const any&, LOBKey* curr_vpath,
+				vector<LOBKeyValue>* out) = 0;
   virtual void set_value__(void* o, const string& new_value,
-			   const ValuePath& path,
+			   const LOBKey& path,
 			   int curr_member_index) = 0;
-
-  virtual void to_json__(ostream& out, const any& o) const = 0;
 };
 
 template <class MT, class T>
@@ -53,9 +50,7 @@ public:
     this->mptr = mptr;
   }
 
-  void to_json__(ostream& out, const any& o) const override;
-
-  void collect_value_pathes__(ValuePath* curr_vpath, vector<ValuePath>* out) override
+  void collect_value_pathes__(LOBKey* curr_vpath, vector<LOBKey>* out) override
   {
     curr_vpath->push_back(member_name);
     if constexpr(is_enum<MT>::value) {
@@ -76,7 +71,7 @@ public:
   }
 
   void set_value__(void* o, const string& new_value,
-		   const vector<string>& path, int curr_member_index) override
+		   const LOBKey& path, int curr_member_index) override
   {
     T* obj = reinterpret_cast<T*>(o);
     MT& member_v = obj->*mptr;
@@ -97,7 +92,8 @@ public:
     }
   }
     
-  void collect_values__(const any& o, ValuePath* curr_vpath, vector<ValuePathValue>* out) override
+  void collect_values__(const any& o, LOBKey* curr_vpath,
+			vector<LOBKeyValue>* out) override
   {
     try {
       const T& obj = any_cast<T>(o);
@@ -134,15 +130,15 @@ shared_ptr<MemberDescriptor> make_member_descriptor(const char* n, MT T::* mptr)
 class StructDescriptor
 {
 public:  
-  void collect_value_pathes__(ValuePath* curr_vpath, vector<ValuePath>* out)
+  void collect_value_pathes__(LOBKey* curr_vpath, vector<LOBKey>* out)
   {
     for (auto& m_descr: member_descriptors) {
       m_descr->collect_value_pathes__(curr_vpath, out);
     }
   }  
 
-  void collect_values__(const any& o, ValuePath* curr_vpath,
-			vector<ValuePathValue>* out)
+  void collect_values__(const any& o, LOBKey* curr_vpath,
+			vector<LOBKeyValue>* out)
   {
     for (auto& m_descr: member_descriptors) {
       m_descr->collect_values__(o, curr_vpath, out);
@@ -150,7 +146,7 @@ public:
   }
 
   void set_value__(void* o, const string& new_value,
-		   const ValuePath& path, size_t curr_index)
+		   const LOBKey& path, size_t curr_index)
   {
     auto it = member_lookup.find(path[curr_index]);
     if (it == member_lookup.end()) {
@@ -176,27 +172,40 @@ public:
   vector<shared_ptr<MemberDescriptor>> member_descriptors;
   map<string, int> member_lookup;
   
-  vector<ValuePath> get_value_pathes()
+  vector<LOBKey> get_value_pathes()
   {
-    ValuePath path;
-    vector<ValuePath> pathes;
+    LOBKey path;
+    vector<LOBKey> pathes;
     collect_value_pathes__(&path, &pathes);
     return pathes;
   }
   
-  vector<ValuePathValue> get_values(const any& o)
+  vector<LOBKeyValue> get_values(const any& o)
   {
-    vector<ValuePathValue> out;
-    ValuePath path;
+    vector<LOBKeyValue> out;
+    LOBKey path;
     collect_values__(o, &path, &out);
     return out;
   }
 
-  void set_value(void* o, const string& path_s, const string& new_value)
+  void set_value(void* o, const LOBKey& path, const string& new_value)
   {
-    auto path = string_split(path_s, '.');
     set_value__(o, new_value, path, 0);
   }
 };
+
+template <class T> inline void from_LOB(T* obj, const LOB& lob)
+{
+  auto sd = get_struct_descriptor<T>();
+  for (auto& kv: lob) {
+    sd.set_value(obj, kv.first, kv.second);
+  }
+}
+    
+template <class T> inline void to_LOB(LOB* lob, const T& obj)
+{
+  auto sd = get_struct_descriptor<T>();
+  lob->set(sd.get_values(obj));
+}
 
 #endif

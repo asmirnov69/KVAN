@@ -2,10 +2,11 @@
 #include <kvan/json-io.h>
 #include <kvan/struct-descriptor.h>
 
-void to_json(ostream& out, const any& o, const StructDescriptor& sd)
+void to_json(ostream& out, const LOB& l)
 {
   out << "{";
-  for (size_t i = 0; i < sd.member_descriptors.size(); ++i) {
+  auto lob_keys = l.keys();
+  for (size_t i = 0; i < lob_keys.size(); ++i) {
     sd.member_descriptors[i]->to_json__(out, o);
     if (i + 1 < sd.member_descriptors.size()) {
       out << ", ";

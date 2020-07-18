@@ -1,18 +1,5 @@
 #include <kvan/csv-io.h>
 
-string to_csv_string(const vector<ValuePathValue>& j)
-{
-  ostringstream out;
-  for (auto it = j.begin(); it != j.end(); ++it) {
-    const auto& [k, v] = *it;
-    out << v;
-    if (next(it) != j.end()) {
-      out << ",";
-    }
-  }
-  return out.str();
-}
-
 vector<string> parse_csv_line(const string& line)
 {
   enum class parser_state {
@@ -80,4 +67,60 @@ vector<string> parse_csv_line(const string& line)
   ret.push_back(cell);
   
   return ret;
+}
+
+void to_csv_line(ostream& out, const vector<LOBKey>& cols, const LOB& l)
+{
+  for (auto it = cols.begin(); it != cols.end(); ++it) {
+    out << l.get(*it);
+    if (next(it) != cols.end()) {
+      out << ",";
+    }
+  }
+}
+
+void to_csv(ostream& out, const LOBVector& v)
+{
+  auto lob_keys = v.keys;
+  vector<string> columns;
+  for (auto& el: lob_keys) {
+    columns.push_back(string_join(el, '.'));
+  }
+  out << string_join(columns, ',') << endl;
+
+  for (size_t i = 0; i < v.lobs.size(); i++) {
+    to_csv_line(out, lob_keys, v.lobs[i]);
+    out << endl;
+  }
+}
+
+void from_csv(LOBVector* v, istream& in)
+{
+  string line;
+  getline(in, line);
+  vector<string> columns = string_split(line, ',');
+  vector<LOBKey> lob_keys;
+  for (auto& col: columns) {
+    lob_keys.push_back(string_split(col, '.'));
+  }
+
+  v->init(lob_keys);
+  int line_no = 1;
+
+  while (getline(in, line)) {
+    vector<string> values = parse_csv_line(line);
+    //cout << "csv line: " << string_join(values, ';') << endl;
+    if (values.size() != columns.size()) {
+      ostringstream m; m << "columns/values mismatch at line " << line_no;
+      throw runtime_error(m.str());
+    }
+    LOB new_v;
+    for (size_t i = 0; i < lob_keys.size(); i++) {
+      auto lob_key = lob_keys[i];
+      auto new_value = values[i];
+      new_v.set(lob_key, new_value);
+    }
+    v->push_back(new_v);
+    line_no++;
+  }
 }

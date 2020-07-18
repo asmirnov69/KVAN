@@ -1,24 +1,29 @@
+#include <sstream>
+using namespace std;
+
+#include <kvan/string-utils.h>
 #include <kvan/fjson-io.h>
 
-string to_fjson_string(const vector<ValuePathValue>& j)
+void to_fjson_line(ostream& out, const LOB& l)
 {
-  ostringstream out;
   out << "{";
-  for (auto it = j.begin(); it != j.end(); ++it) {
-    const auto& [k, v] = *it;
-    out << "\"";
-    for (auto kit = k.begin(); kit != k.end(); ++kit) {
-      out << (*kit);
-      if (next(kit) != k.end()) {
-	out << ".";
-      }
-    }
-    out << "\"";
-    out << ": " << v;
-    if (next(it) != j.end()) {
+  for (auto it = l.begin(); it != l.end(); ++it) {
+    out << "\"" << string_join((*it).first, '.') << "\"";
+    out << ": " << (*it).second;
+    if (next(it) != l.end()) {
       out << ", ";
     }
   }
   out << "}";
-  return out.str();
 }
+
+void to_fjson(ostream& out, const vector<LOB>& v)
+{
+  out << "[";
+  for (size_t i = 0; i < v.size(); i++) {
+    to_fjson_line(out, v[i]);
+    if (i+1 < v.size()) out << ",";
+  }
+  out << "]";
+}
+

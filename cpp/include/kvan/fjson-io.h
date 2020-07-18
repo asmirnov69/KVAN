@@ -5,27 +5,9 @@
 #include <iostream>
 using namespace std;
 
-#include <kvan/struct-descriptor.h>
+#include <kvan/lob.h>
 
-string to_fjson_string(const vector<ValuePathValue>& j);
-
-template <class T>
-inline ValuePathValue to_fjson(const vector<T>& v)
-{
-  StructDescriptor psd = get_struct_descriptor<T>();  
-  auto vps = psd.get_value_pathes();
-  vector<string> columns = string_join(vps, '.');
-
-  string out;
-  out += "[";
-  for (size_t i = 0; i < v.size(); i++) {
-    auto p_json = psd.get_values(v[i]);
-    out += to_fjson_string(p_json);
-    if (i+1 < v.size()) out += ",";
-  }
-  out += "]";
-  
-  return make_pair(columns, out);
-}
+void to_fjson_line(ostream&, const LOB&);
+void to_fjson(ostream& out, const vector<LOB>& lobs);
 
 #endif
