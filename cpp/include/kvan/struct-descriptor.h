@@ -20,6 +20,19 @@ using namespace std;
 struct StructDescriptor;
 template <class T> StructDescriptor get_struct_descriptor();
 
+class StructVisitor
+{
+public:
+  virtual void visit_enum(const LOBKey& path, const string& enum_s) = 0;
+  virtual void visit_string(const LOBKey& path, const string& s) = 0;
+  virtual void visit_fundamental(const LOBKey& path, const string& v) = 0;
+  virtual void visit_start_map(const LOBKey& path) = 0;
+  virtual void visit_end_map() = 0;
+  virtual void visit_delimiter() = 0;
+  virtual void visit_start_array() = 0;
+  virtual void visit_end_array() = 0;
+};
+
 class MemberDescriptor
 {
 public:
@@ -35,6 +48,12 @@ public:
   virtual void set_value__(void* o, const string& new_value,
 			   const LOBKey& path,
 			   int curr_member_index) = 0;
+  virtual void visit_member(StructVisitor* visitor,
+			    LOBKey* curr_vpath,
+			    const any& o) = 0;
+  virtual void visit_member_array_element(StructVisitor* visitor,
+					  LOBKey* curr_vpath,
+					  const any& o) = 0;
 };
 
 template <class MT, class T>
@@ -119,6 +138,67 @@ public:
       throw runtime_error(ex.what());      
     }
   }
+
+  void visit_member_array_element(StructVisitor* visitor, LOBKey* curr_vpath, const any& o) override
+  {
+    if constexpr(is_vector<MT>::value) {
+	typedef typename MT::value_type vt;
+	try {
+	  const vt& member_v = any_cast<vt>(o);
+	  if constexpr(is_enum<vt>::value) {
+	      visitor->visit_enum(*curr_vpath, get_enum_value_string<vt>(member_v));
+	    } else if constexpr(is_string<vt>::value) {
+	      visitor->visit_string(*curr_vpath, member_v);
+	    } else if constexpr(is_fundamental<vt>::value) {
+	      visitor->visit_fundamental(*curr_vpath, to_string(member_v));	
+	    } else if constexpr(is_vector<vt>::value) {
+	      visitor->visit_start_array();
+	      for (size_t i = 0; i < member_v.size(); i++) {
+		this->visit_member_array_element(visitor, curr_vpath, member_v[i]);
+	      }
+	      visitor->visit_end_array();
+	    } else if constexpr(is_function<decltype(get_struct_descriptor<vt>)>::value) {
+	      auto m_sd = get_struct_descriptor<vt>();
+	      m_sd.visit_members(visitor, curr_vpath, member_v);
+	    } else {
+	    throw runtime_error(__func__);
+	  }
+	} catch (const bad_any_cast& ex) {
+	  throw runtime_error(ex.what());
+	}
+      }
+  }
+  
+  void visit_member(StructVisitor* visitor, LOBKey* curr_vpath, const any& o) override
+  {
+    try {
+      const T& obj = any_cast<T>(o);
+      const MT& member_v = obj.*mptr;
+
+      curr_vpath->push_back(member_name);
+      if constexpr(is_enum<MT>::value) {
+	  visitor->visit_enum(*curr_vpath, get_enum_value_string<MT>(member_v));	
+      } else if constexpr(is_string<MT>::value) {
+	  visitor->visit_string(*curr_vpath, member_v);
+      } else if constexpr(is_fundamental<MT>::value) {
+	  visitor->visit_fundamental(*curr_vpath, to_string(member_v));	
+      } else if constexpr(is_vector<MT>::value) {	  
+	  visitor->visit_start_array();
+	  for (size_t i = 0; i < member_v.size(); i++) {
+	    this->visit_member_array_element(visitor, curr_vpath, member_v[i]);
+	  }
+	  visitor->visit_end_array();
+      } else if constexpr(is_function<decltype(get_struct_descriptor<MT>)>::value) {
+	auto m_sd = get_struct_descriptor<MT>();
+	m_sd.visit_members(visitor, curr_vpath, member_v);
+      } else {
+	throw runtime_error(__func__);
+      }
+      curr_vpath->pop_back();
+    } catch (const bad_any_cast& ex) {
+      throw runtime_error(ex.what());
+    }
+  }
 };
 
 template <class MT, class T> inline
@@ -130,6 +210,19 @@ shared_ptr<MemberDescriptor> make_member_descriptor(const char* n, MT T::* mptr)
 class StructDescriptor
 {
 public:  
+  void visit_members(StructVisitor* sv, LOBKey* curr_vpath, const any& o)
+  {
+    sv->visit_start_map(*curr_vpath);
+    for (size_t i = 0; i < member_descriptors.size(); i++) {
+      auto m_descr = member_descriptors[i];
+      m_descr->visit_member(sv, curr_vpath, o);
+      if (i + 1 < member_descriptors.size()) {
+	sv->visit_delimiter();
+      }
+    }
+    sv->visit_end_map();
+  }
+  
   void collect_value_pathes__(LOBKey* curr_vpath, vector<LOBKey>* out)
   {
     for (auto& m_descr: member_descriptors) {

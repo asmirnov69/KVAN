@@ -2,17 +2,48 @@
 #include <kvan/json-io.h>
 #include <kvan/struct-descriptor.h>
 
-void to_json(ostream& out, const LOB& l)
+void JSONVisitor::visit_enum(const LOBKey& path, const string& enum_s)
 {
-  out << "{";
-  auto lob_keys = l.keys();
-  for (size_t i = 0; i < lob_keys.size(); ++i) {
-    sd.member_descriptors[i]->to_json__(out, o);
-    if (i + 1 < sd.member_descriptors.size()) {
-      out << ", ";
-    }
+  out << "\"" << path.back() << "\": " << enum_s;
+}
+
+void JSONVisitor::visit_string(const LOBKey& path, const string& s)
+{
+  out << "\"" << path.back() << "\": " << "\"" << s << "\"";
+}
+
+void JSONVisitor::visit_fundamental(const LOBKey& path, const string& v)
+{
+  out << "\"" << path.back() << "\": " << v;
+} 
+
+void JSONVisitor::visit_start_map(const LOBKey& path)
+{
+  if (path.size() > 0) {
+    out << "\"" << path.back() << "\": {";
+  } else {
+    out << "{";
   }
+}
+
+void JSONVisitor::visit_end_map()
+{
   out << "}";
+}
+
+void JSONVisitor::visit_delimiter()
+{
+  out << ", ";
+}
+
+void JSONVisitor::visit_start_array()
+{
+  out << "[";
+}
+
+void JSONVisitor::visit_end_array()
+{
+  out << "]";
 }
 
 // json input
