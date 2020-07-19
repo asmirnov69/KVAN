@@ -200,7 +200,8 @@ public:
   
   void set_value(void* o, const LOBKey& path, const string& new_value)
   {
-    set_value__(o, new_value, path, 0); // or 1??
+    // first element of dpath is ?this, discard
+    set_value__(o, new_value, path, 1);
   }
 };
 
