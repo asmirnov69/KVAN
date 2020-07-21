@@ -33,7 +33,6 @@ ADD_ACTION("write_json[]", [](const Fuargs::args&) {
     b.ws.push_back(1.0);
     b.ws.push_back(2.0);
 
-#if 0
     //Parents pp;
     //pp.parents.push_back(persons[0]);
     PersonSeq psq;
@@ -41,7 +40,6 @@ ADD_ACTION("write_json[]", [](const Fuargs::args&) {
     psq.push_back(persons[1]);
     b.band_member_parents.push_back(psq);
     b.band_member_parents.push_back(psq);
-#endif
 
     to_json(cout, b);
     
