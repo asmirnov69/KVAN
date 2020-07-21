@@ -17,8 +17,8 @@ using namespace std;
 #include <kvan/string-utils.h>
 
 typedef vector<string> LOBKey;
-struct StructDescriptor;
-template <class T> StructDescriptor get_struct_descriptor();
+class StructDescriptor;
+template <class T> inline StructDescriptor get_struct_descriptor();
 
 class StructVisitor
 {
@@ -204,5 +204,10 @@ public:
     set_value__(o, new_value, path, 1);
   }
 };
+
+template <class T> inline StructDescriptor get_struct_descriptor() {
+  static_assert(assert_false<T>::value, "provide spec");
+  return StructDescriptor();
+}
 
 #endif

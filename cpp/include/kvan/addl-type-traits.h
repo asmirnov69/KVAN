@@ -19,5 +19,8 @@ struct is_string
 template <typename T> struct is_vector: std::false_type {};
 template <typename... Args> struct is_vector<std::vector<Args...>> : std::true_type{};
 
+// from https://stackoverflow.com/a/33414109/1181482
+template<typename T>
+struct assert_false : std::false_type {};
 
 #endif
