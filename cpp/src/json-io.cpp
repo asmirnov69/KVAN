@@ -2,28 +2,29 @@
 #include <kvan/json-io.h>
 #include <kvan/struct-descriptor.h>
 
+void JSONVisitor::visit_key(const LOBKey& path)
+{
+  out << "\"" << path.back() << "\": ";
+}
+
 void JSONVisitor::visit_enum(const LOBKey& path, const string& enum_s)
 {
-  out << "\"" << path.back() << "\": \"" << enum_s << "\"";
+  out << enum_s << "\"";
 }
 
 void JSONVisitor::visit_string(const LOBKey& path, const string& s)
 {
-  out << "\"" << path.back() << "\": " << "\"" << s << "\"";
+  out << "\"" << s << "\"";
 }
 
 void JSONVisitor::visit_fundamental(const LOBKey& path, const string& v)
 {
-  out << "\"" << path.back() << "\": " << v;
+  out << v;
 } 
 
 void JSONVisitor::visit_start_map(const LOBKey& path)
 {
-  if (path.size() > 0) {
-    out << "\"" << path.back() << "\": {";
-  } else {
-    out << "{";
-  }
+  out << "{";
 }
 
 void JSONVisitor::visit_end_map()

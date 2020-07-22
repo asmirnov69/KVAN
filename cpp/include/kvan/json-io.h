@@ -14,6 +14,7 @@ class JSONVisitor : public StructVisitor
 {
 public:
   ostringstream out;
+  void visit_key(const LOBKey& path) override;
   void visit_enum(const LOBKey& path, const string& enum_s) override;
   void visit_string(const LOBKey& path, const string& s) override;
   void visit_fundamental(const LOBKey& path, const string& v) override;

@@ -13,6 +13,7 @@ class FJSONVisitor : public StructVisitor
 public:
   ostream& out;
   FJSONVisitor(ostream& out_) : out(out_) {}
+  void visit_key(const LOBKey& path) override;
   void visit_enum(const LOBKey& path, const string& enum_s) override;
   void visit_string(const LOBKey& path, const string& s) override;
   void visit_fundamental(const LOBKey& path, const string& v) override;

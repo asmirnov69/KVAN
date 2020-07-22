@@ -4,6 +4,10 @@ using namespace std;
 #include <kvan/string-utils.h>
 #include <kvan/fjson-io.h>
 
+void FJSONVisitor::visit_key(const LOBKey& path)
+{
+}
+
 void FJSONVisitor::visit_enum(const LOBKey& path, const string& enum_s)
 {
   out << "\"" << string_join(path, '.') << "\": \"" << enum_s << "\"";

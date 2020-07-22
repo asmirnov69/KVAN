@@ -26,7 +26,8 @@ ADD_ACTION("write_json[]", [](const Fuargs::args&) {
     persons.push_back(p1);
     persons.push_back(p2);
     persons.push_back(p2);
-    
+
+#if 1
     Band b;
     b.name = "ura";
     b.band_members = persons;
@@ -42,7 +43,9 @@ ADD_ACTION("write_json[]", [](const Fuargs::args&) {
     b.band_member_parents.push_back(psq);
 
     to_json(cout, b);
-    
+#else
+    to_json(cout, p1);
+#endif
     return true;
   });
 

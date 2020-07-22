@@ -1,5 +1,9 @@
 #include <kvan/struct-descriptor.h>
 
+StructDescriptor::StructDescriptor()
+{
+}
+
 StructDescriptor::StructDescriptor(initializer_list<shared_ptr<MemberDescriptor>> l)
 {
   for (auto el: l) {

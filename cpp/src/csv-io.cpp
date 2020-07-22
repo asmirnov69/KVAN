@@ -1,5 +1,9 @@
 #include <kvan/csv-io.h>
 
+void CSVColumnsVisitor::visit_key(const LOBKey& path)
+{
+}
+
 void CSVColumnsVisitor::visit_enum(const LOBKey& path, const string& enum_s)
 {
   cols.push_back(path);
@@ -36,6 +40,10 @@ void CSVColumnsVisitor::visit_end_array()
 }
 
 // ...
+
+void CSVVisitor::visit_key(const LOBKey& path)
+{
+}
 
 void CSVVisitor::visit_enum(const LOBKey& path, const string& enum_s)
 {

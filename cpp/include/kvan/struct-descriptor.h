@@ -17,12 +17,11 @@ using namespace std;
 #include <kvan/string-utils.h>
 
 typedef vector<string> LOBKey;
-class StructDescriptor;
-template <class T> inline StructDescriptor get_struct_descriptor();
 
 class StructVisitor
 {
 public:
+  virtual void visit_key(const LOBKey& path) = 0;
   virtual void visit_enum(const LOBKey& path, const string& enum_s) = 0;
   virtual void visit_string(const LOBKey& path, const string& s) = 0;
   virtual void visit_fundamental(const LOBKey& path, const string& v) = 0;
@@ -45,9 +44,6 @@ public:
   virtual void visit_member(StructVisitor* visitor,
 			    LOBKey* curr_vpath,
 			    const any& o) = 0;
-  virtual void visit_member_array_element(StructVisitor* visitor,
-					  LOBKey* curr_vpath,
-					  const any& o) = 0;
 };
 
 template <class MT, class T>
@@ -60,11 +56,19 @@ public:
   MemberDescriptorT(const char* member_name, MT T::*mptr);
   void set_value__(void* o, const string& new_value,
 		   const LOBKey& path, int curr_member_index) override;
-
-  void visit_member_array_element(StructVisitor* visitor, LOBKey* curr_vpath,
-				  const any& o) override;
   void visit_member(StructVisitor* visitor, LOBKey* curr_vpath,
 		    const any& o) override;
+};
+
+template <class V>
+class VectorDescriptorT
+{
+public:
+  VectorDescriptorT();
+  void set_value__(void* o, const string& new_value,
+		   const LOBKey& path, int curr_member_index);
+  void visit_vector(StructVisitor* visitor, LOBKey* curr_vpath,
+		    const V& o);
 };
 
 class StructDescriptor
@@ -79,6 +83,7 @@ public:
   vector<shared_ptr<MemberDescriptor>> member_descriptors;
   map<string, int> member_lookup;
 
+  StructDescriptor();
   StructDescriptor(initializer_list<shared_ptr<MemberDescriptor>> l);
   void set_value(void* o, const LOBKey& path, const string& new_value);
 };
