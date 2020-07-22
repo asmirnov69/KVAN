@@ -17,6 +17,9 @@ using namespace std;
 #include <kvan/string-utils.h>
 
 typedef vector<string> LOBKey;
+typedef vector<int> mindex_t;
+typedef vector<pair<string, mindex_t>> path_t;  // member, index
+string to_string(const path_t&);
 
 class StructVisitor
 {
@@ -39,7 +42,7 @@ public:
   MemberDescriptor(const char* member_name);
 
   virtual void set_value__(void* o, const string& new_value,
-			   const LOBKey& path,
+			   const path_t& path,
 			   int curr_member_index) = 0;
   virtual void visit_member(StructVisitor* visitor,
 			    LOBKey* curr_vpath,
@@ -55,7 +58,7 @@ private:
 public:
   MemberDescriptorT(const char* member_name, MT T::*mptr);
   void set_value__(void* o, const string& new_value,
-		   const LOBKey& path, int curr_member_index) override;
+		   const path_t& path, int curr_member_index) override;
   void visit_member(StructVisitor* visitor, LOBKey* curr_vpath,
 		    const any& o) override;
 };
@@ -66,17 +69,17 @@ class VectorDescriptorT
 public:
   VectorDescriptorT();
   void set_value__(void* o, const string& new_value,
-		   const LOBKey& path, int curr_member_index);
+		   const path_t& path, int curr_member_index, int dim_index);
   void visit_vector(StructVisitor* visitor, LOBKey* curr_vpath,
 		    const V& o);
 };
 
 class StructDescriptor
 {
-public:  
+public:
   void visit_members(StructVisitor* sv, LOBKey* curr_vpath, const any& o);
   void set_value__(void* o, const string& new_value,
-		   const LOBKey& path, size_t curr_index);
+		   const path_t& path, int curr_index);
 
 public:
   vector<string> member_names;
@@ -85,7 +88,7 @@ public:
 
   StructDescriptor();
   StructDescriptor(initializer_list<shared_ptr<MemberDescriptor>> l);
-  void set_value(void* o, const LOBKey& path, const string& new_value);
+  void set_value(void* o, const path_t& path, const string& new_value);
 };
 
 template <class T> inline

@@ -15,9 +15,10 @@ MemberDescriptorT<MT, T>::MemberDescriptorT(const char* member_name, MT T::*mptr
 template <class MT, class T> inline
 void MemberDescriptorT<MT, T>::set_value__(void* o,
 					   const string& new_value,
-					   const LOBKey& path,
+					   const path_t& path,
 					   int curr_member_index)
 {
+  //cout << __func__ << ": " << to_string(path) << " " << curr_member_index << endl;
   T* obj = reinterpret_cast<T*>(o);
   MT& member_v = obj->*mptr;
     
@@ -28,7 +29,8 @@ void MemberDescriptorT<MT, T>::set_value__(void* o,
     } else if constexpr(is_fundamental<MT>::value) {
       istringstream vin(new_value); vin >> member_v;
     } else if constexpr(is_vector<MT>::value) {
-      throw runtime_error(__func__);
+      VectorDescriptorT<MT> vd;
+      vd.set_value__(&member_v, new_value, path, curr_member_index, 0);
     } else if constexpr(is_function<decltype(get_struct_descriptor<MT>)>::value) {
       auto m_sd = get_struct_descriptor<MT>();
       m_sd.set_value__(&member_v, new_value, path, curr_member_index + 1);
@@ -74,10 +76,41 @@ VectorDescriptorT<V>::VectorDescriptorT()
 
 template <class V> inline
 void VectorDescriptorT<V>::set_value__(void* o, const string& new_value,
-				       const LOBKey& path,
-				       int curr_member_index)
+				       const path_t& path,
+				       int curr_member_index,
+				       int dim_index)
 {
-  throw runtime_error(__func__);
+  size_t w_index = path[curr_member_index].second[dim_index];
+#if 0
+  cout << "VectorDescriptorT<V>::set_value__: " << to_string(path)
+       << " " << curr_member_index << " " << dim_index
+       << " " << w_index << endl;
+#endif
+  
+  typedef typename V::value_type vt;
+  V* v = (V*)o;
+
+  if (v->size() <= w_index) {
+    v->resize(w_index + 1);
+  }
+  vt& target_v = (*v)[w_index];
+  
+  if constexpr(is_enum<vt>::value) {
+      set_enum_value(&target_v, new_value);
+    } else if constexpr(is_string<vt>::value) {
+      target_v = v;
+    } else if constexpr(is_fundamental<vt>::value) {
+      istringstream vin(new_value);
+      vin >> target_v;
+    } else if constexpr(is_vector<vt>::value) {
+      auto vd = VectorDescriptorT<vt>();
+      vd.set_value__(&target_v, new_value, path, curr_member_index, dim_index + 1);
+    } else if constexpr(is_function<decltype(get_struct_descriptor<vt>)>::value) {
+      auto m_sd = get_struct_descriptor<vt>();
+      m_sd.set_value__(&target_v, new_value, path, curr_member_index + 1);
+    } else {
+    static_assert(assert_false<vt>::value, "unknown value type");
+  }
 }
 
 template <class V> inline

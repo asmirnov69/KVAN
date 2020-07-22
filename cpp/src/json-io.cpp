@@ -9,7 +9,7 @@ void JSONVisitor::visit_key(const LOBKey& path)
 
 void JSONVisitor::visit_enum(const LOBKey& path, const string& enum_s)
 {
-  out << enum_s << "\"";
+  out << "\"" << enum_s << "\"";
 }
 
 void JSONVisitor::visit_string(const LOBKey& path, const string& s)
@@ -49,16 +49,16 @@ void JSONVisitor::visit_end_array()
 
 // json input
 
-struct parser_ctx {
-  vector<pair<string, string>>* ret;
-  typedef vector<int> mindex_t;
-  vector<pair<string, mindex_t>> curr_path; // member, index
 
-  parser_ctx(vector<pair<string, string>>* ret) {
+struct parser_ctx {
+  vector<pair<path_t, string>>* ret;
+  path_t curr_path;
+
+  parser_ctx(vector<pair<path_t, string>>* ret) {
     this->ret = ret;
     curr_path.push_back(make_pair("", mindex_t()));
   }
-  string get_curr_path();
+  vector<pair<string, mindex_t>> get_curr_path();
   string get_mindex(const mindex_t&);
   
   int process_null();
@@ -90,19 +90,9 @@ string parser_ctx::get_mindex(const mindex_t& mi)
   return ret.str();
 }
 
-string parser_ctx::get_curr_path()
+vector<pair<string, mindex_t>> parser_ctx::get_curr_path()
 {
-  ostringstream out;
-  for (size_t i = 0; i < curr_path.size(); i++) {
-    out << curr_path[i].first;
-    if (curr_path[i].second.size() > 0) {
-      out << "[" << get_mindex(curr_path[i].second) << "]";
-    }
-    if (i + 1 < curr_path.size()) {
-      out << ".";
-    }
-  }
-  return out.str();
+  return curr_path;
 }
 
 int parser_ctx::process_null()
@@ -259,9 +249,9 @@ static yajl_callbacks cbs = {
   reformat_end_array
 };
 
-vector<pair<string, string>> from_json(const string& json_s)
+vector<pair<path_t, string>> from_json(const string& json_s)
 {
-  vector<pair<string, string>> ret;
+  vector<pair<path_t, string>> ret;
   parser_ctx ctx(&ret);
   
   auto hand = yajl_alloc(&cbs, NULL, &ctx);
@@ -276,5 +266,6 @@ vector<pair<string, string>> from_json(const string& json_s)
   }
 
   yajl_free(hand);
+
   return ret;
 }

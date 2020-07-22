@@ -72,11 +72,14 @@ void from_csv(vector<T>* v, istream& in)
   string line;
   getline(in, line);
   vector<string> columns = string_split(line, ',');
-  vector<LOBKey> lob_keys;
+  vector<path_t> lob_keys;
   for (auto& col: columns) {
-    LOBKey k = {"?this"}; // first element of dpath
+    path_t k;
+    k.push_back(make_pair("?this", mindex_t())); // first element of dpath
     auto cols = string_split(col, '.');
-    k.insert(k.end(), cols.begin(), cols.end());
+    for (auto& c: cols) {
+      k.push_back(make_pair(c, mindex_t()));
+    }
     lob_keys.emplace_back(k);
   }
 

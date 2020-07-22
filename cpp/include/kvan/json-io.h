@@ -25,7 +25,7 @@ public:
   void visit_end_array() override;  
 };
 
-vector<pair<string, string>> from_json(const string& json_s);
+vector<pair<path_t, string>> from_json(const string& json_s);
 
 template <class T>
 inline void from_json(T* obj, const string& json_s)
@@ -34,7 +34,7 @@ inline void from_json(T* obj, const string& json_s)
 
   auto values = from_json(json_s);
   for (auto& v: values) {
-    sd.set_value(obj, string_split(v.first, '.'), v.second);
+    sd.set_value(obj, v.first, v.second);
   }
 }
 

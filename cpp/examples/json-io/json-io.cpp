@@ -64,7 +64,7 @@ ADD_ACTION("read_json[fn]", [](const Fuargs::args& args) {
     auto kvs = from_json(json.str());
     cout << "kvs:" << endl;
     for (auto& el: kvs) {
-      cout << el.first << ": " << el.second << endl;
+      cout << to_string(el.first) << ": " << el.second << endl;
     }
     
     return true;
@@ -86,6 +86,26 @@ ADD_ACTION("read_json_person[fn]", [](const Fuargs::args& args) {
 
     vector<Person> pp = {p};
     to_fjson(cout, pp);
+    cout << endl;
+
+    return true;
+  });
+
+ADD_ACTION("read_json_band[fn]", [](const Fuargs::args& args) {
+    string fn = args.get("fn");
+    ifstream in(fn);
+    if (!in) {
+      cerr << "can't open file " << fn << endl;
+      return false;
+    }
+
+    stringstream json; json << in.rdbuf();
+
+    cout << "json: " << json.str() << endl;    
+    Band b;
+    from_json(&b, json.str());
+
+    to_json(cout, b);
     cout << endl;
 
     return true;
