@@ -1,7 +1,7 @@
 #import ipdb
 import sys
 from collections import OrderedDict as odict
-import inspect, funcsigs
+import inspect
 from pyparsing import *
 
 def build_parser():
@@ -107,7 +107,7 @@ def reg_action(func):
     func_module = func_def['__module__']
     func_name = func_def['__name__']
     reg_func_name = func_name if func_module == '__main__' else func_module + '.' + func_name
-    func_sig = funcsigs.signature(func)
+    func_sig = inspect.signature(func)
     all_actions[reg_func_name] = (func, func_sig)
 
 # this is decorator
