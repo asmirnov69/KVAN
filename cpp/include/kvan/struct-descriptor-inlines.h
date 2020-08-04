@@ -98,7 +98,7 @@ void VectorDescriptorT<V>::set_value__(void* o, const string& new_value,
   if constexpr(is_enum<vt>::value) {
       set_enum_value(&target_v, new_value);
     } else if constexpr(is_string<vt>::value) {
-      target_v = v;
+      target_v = new_value;
     } else if constexpr(is_fundamental<vt>::value) {
       istringstream vin(new_value);
       vin >> target_v;

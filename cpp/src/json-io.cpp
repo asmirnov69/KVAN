@@ -1,3 +1,6 @@
+#include <regex>
+using namespace std;
+
 #include <yajl/yajl_parse.h>
 #include <kvan/json-io.h>
 #include <kvan/struct-descriptor.h>
@@ -14,7 +17,8 @@ void JSONVisitor::visit_enum(const LOBKey& path, const string& enum_s)
 
 void JSONVisitor::visit_string(const LOBKey& path, const string& s)
 {
-  out << "\"" << s << "\"";
+  static const regex q_re("\"");
+  out << "\"" << regex_replace(s, q_re, "\\\"") << "\"";
 }
 
 void JSONVisitor::visit_fundamental(const LOBKey& path, const string& v)
