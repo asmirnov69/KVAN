@@ -22,6 +22,32 @@ Person p2{.sss = vector<string>{},
        .c = Contact(), .backup_c = Contact(),
 	  .age = 27, .height = 1.8};
 
+struct void_response {
+  int response_id;
+  json_null_t retval;
+};
+
+template <> inline StructDescriptor get_struct_descriptor<void_response>() {
+  static const StructDescriptor sd {
+    make_member_descriptor("response_id", &void_response::response_id),
+      make_member_descriptor("retval", &void_response::retval)
+      };
+  return sd;
+}
+
+ADD_ACTION("test_void[]", [](const Fuargs::args&) {
+    void_response vres{.response_id = 111, .retval = json_null_t()};
+    cout << "vres: "; // {response_id: 111, retval: null}
+    to_json(cout, vres);
+    cout << endl;
+
+    string vres2_s = "{\"response_id\": 222, \"retval\": null}";
+    void_response vres2;
+    from_json(&vres2, vres2_s);
+    cout << "vres2.response_id: " << vres2.response_id << endl;
+    //cout << "vres2.retval has value: " << vres2.retval.has_value() << endl;
+    return 0;
+  });
 
 ADD_ACTION("write_json[]", [](const Fuargs::args&) {
     vector<Person> persons;

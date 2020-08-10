@@ -1,5 +1,7 @@
 // -*- c++ -*-
 
+typedef runtime_error JSONError;
+
 inline MemberDescriptor::MemberDescriptor(const char* member_name)
 {
   this->member_name = member_name;
@@ -14,21 +16,39 @@ MemberDescriptorT<MT, T>::MemberDescriptorT(const char* member_name, MT T::*mptr
 
 template <class MT, class T> inline
 void MemberDescriptorT<MT, T>::set_value__(void* o,
-					   const string& new_value,
+					   const optional_string_t& new_value,
 					   const path_t& path,
 					   int curr_member_index)
 {
   //cout << __func__ << ": " << to_string(path) << " " << curr_member_index << endl;
   T* obj = reinterpret_cast<T*>(o);
   MT& member_v = obj->*mptr;
-    
-  if constexpr(is_enum<MT>::value) {
-      set_enum_value<MT>(&member_v, new_value);
+
+  if constexpr(is_same<MT, json_null_t>::value) {
+      if (new_value.has_value()) {
+	ostringstream m;
+	m << "json_null_t member can't have non-null value: " << new_value.value();
+	throw JSONError(m.str());
+      }
+    } else if constexpr(is_enum<MT>::value) {
+      if (!new_value.has_value()) {
+	throw JSONError("enum member must have non-null value");
+      }	
+      set_enum_value<MT>(&member_v, new_value.value());
     } else if constexpr(is_string<MT>::value) {
-      member_v = new_value;
+      if (!new_value.has_value()) {
+	throw JSONError("string member must have non-null value");
+      }	
+      member_v = new_value.value();
     } else if constexpr(is_fundamental<MT>::value) {
-      istringstream vin(new_value); vin >> member_v;
+      if (!new_value.has_value()) {
+	throw JSONError("fundamental type member must have non-null value");
+      }	
+      istringstream vin(new_value.value()); vin >> member_v;
     } else if constexpr(is_vector<MT>::value) {
+      if (!new_value.has_value()) {
+	throw JSONError("vector member must have non-null value");
+      }
       VectorDescriptorT<MT> vd;
       vd.set_value__(&member_v, new_value, path, curr_member_index, 0);
     } else if constexpr(is_function<decltype(get_struct_descriptor<MT>)>::value) {
@@ -48,7 +68,9 @@ void MemberDescriptorT<MT, T>::visit_member(StructVisitor* visitor, LOBKey* curr
     
     curr_vpath->push_back(member_name);
     visitor->visit_key(*curr_vpath);
-    if constexpr(is_enum<MT>::value) {
+    if constexpr(is_same<MT, json_null_t>::value) {
+	visitor->visit_null(*curr_vpath);
+      } else if constexpr(is_enum<MT>::value) {
 	visitor->visit_enum(*curr_vpath, get_enum_value_string<MT>(member_v));	
       } else if constexpr(is_string<MT>::value) {
 	visitor->visit_string(*curr_vpath, member_v);
@@ -75,7 +97,8 @@ VectorDescriptorT<V>::VectorDescriptorT()
 }
 
 template <class V> inline
-void VectorDescriptorT<V>::set_value__(void* o, const string& new_value,
+void VectorDescriptorT<V>::set_value__(void* o,
+				       const optional_string_t& new_value,
 				       const path_t& path,
 				       int curr_member_index,
 				       int dim_index)
@@ -94,13 +117,15 @@ void VectorDescriptorT<V>::set_value__(void* o, const string& new_value,
     v->resize(w_index + 1);
   }
   vt& target_v = (*v)[w_index];
-  
-  if constexpr(is_enum<vt>::value) {
+
+  if constexpr(is_same<vt, json_null_t>::value) {
+      throw JSONError("can't have vector element null");
+    } else if constexpr(is_enum<vt>::value) {
       set_enum_value(&target_v, new_value);
     } else if constexpr(is_string<vt>::value) {
-      target_v = new_value;
+      target_v = new_value.value();
     } else if constexpr(is_fundamental<vt>::value) {
-      istringstream vin(new_value);
+      istringstream vin(new_value.value());
       vin >> target_v;
     } else if constexpr(is_vector<vt>::value) {
       auto vd = VectorDescriptorT<vt>();

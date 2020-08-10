@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <any>
+#include <optional>
 using namespace std;
 
 #include <kvan/addl-type-traits.h>
@@ -14,6 +15,7 @@ class JSONVisitor : public StructVisitor
 {
 public:
   ostringstream out;
+  void visit_null(const LOBKey& path) override;
   void visit_key(const LOBKey& path) override;
   void visit_enum(const LOBKey& path, const string& enum_s) override;
   void visit_string(const LOBKey& path, const string& s) override;
@@ -25,7 +27,7 @@ public:
   void visit_end_array() override;  
 };
 
-vector<pair<path_t, string>> from_json(const string& json_s);
+vector<pair<path_t, optional_string_t>> from_json(const string& json_s);
 
 template <class T>
 inline void from_json(T* obj, const string& json_s)

@@ -15,6 +15,7 @@ public:
     vector<string> cols_s = string_join(cols, '.');
     return string_join(cols_s, ',');
   }
+  void visit_null(const LOBKey& path) override;
   void visit_key(const LOBKey& path) override;
   void visit_enum(const LOBKey& path, const string& enum_s) override;
   void visit_string(const LOBKey& path, const string& s) override;
@@ -34,6 +35,7 @@ public:
   CSVVisitor(ostream& out_, const vector<LOBKey>& cols) : out(out_) {
     this->cols = cols;
   }
+  void visit_null(const LOBKey& path) override;
   void visit_key(const LOBKey& path) override;
   void visit_enum(const LOBKey& path, const string& enum_s) override;
   void visit_string(const LOBKey& path, const string& s) override;

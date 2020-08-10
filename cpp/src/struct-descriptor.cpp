@@ -48,7 +48,7 @@ void StructDescriptor::visit_members(StructVisitor* sv, LOBKey* curr_vpath, cons
   sv->visit_end_map();
 }
 
-void StructDescriptor::set_value__(void* o, const string& new_value,
+void StructDescriptor::set_value__(void* o, const optional_string_t& new_value,
 				   const path_t& path, int curr_index)
 {
   auto it = member_lookup.find(path[curr_index].first);
@@ -63,7 +63,7 @@ void StructDescriptor::set_value__(void* o, const string& new_value,
   md->set_value__(o, new_value, path, curr_index);
 }
 
-void StructDescriptor::set_value(void* o, const path_t& path, const string& new_value)
+void StructDescriptor::set_value(void* o, const path_t& path, const optional_string_t& new_value)
 {
   // first element of dpath is ?this, discard
   set_value__(o, new_value, path, 1);

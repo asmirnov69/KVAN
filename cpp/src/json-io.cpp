@@ -1,9 +1,11 @@
-#include <regex>
-using namespace std;
-
 #include <yajl/yajl_parse.h>
 #include <kvan/json-io.h>
 #include <kvan/struct-descriptor.h>
+
+void JSONVisitor::visit_null(const LOBKey& path)
+{
+  out << "null";
+}
 
 void JSONVisitor::visit_key(const LOBKey& path)
 {
@@ -17,8 +19,7 @@ void JSONVisitor::visit_enum(const LOBKey& path, const string& enum_s)
 
 void JSONVisitor::visit_string(const LOBKey& path, const string& s)
 {
-  static const regex q_re("\"");
-  out << "\"" << regex_replace(s, q_re, "\\\"") << "\"";
+  out << "\"" << replace_all(s, "\"", "\\\"") << "\"";
 }
 
 void JSONVisitor::visit_fundamental(const LOBKey& path, const string& v)
@@ -55,10 +56,10 @@ void JSONVisitor::visit_end_array()
 
 
 struct parser_ctx {
-  vector<pair<path_t, string>>* ret;
+  vector<pair<path_t, optional_string_t>>* ret;
   path_t curr_path;
 
-  parser_ctx(vector<pair<path_t, string>>* ret) {
+  parser_ctx(vector<pair<path_t, optional_string_t>>* ret) {
     this->ret = ret;
     curr_path.push_back(make_pair("", mindex_t()));
   }
@@ -103,7 +104,7 @@ int parser_ctx::process_null()
 {
   //cout << __func__ << endl;
   //cout << get_curr_path() << ": " << "null" << endl;
-  ret->push_back(make_pair(get_curr_path(), "")); // null is empty string
+  ret->push_back(make_pair(get_curr_path(), optional_string_t{})); // null is empty string
   return 1;
 }
 
@@ -112,7 +113,7 @@ int parser_ctx::process_boolean(int b)
   //cerr << "parser_ctx::process_boolean: " << b << endl;
   //cout << __func__ << endl;
   //cout << get_curr_path() << ": " << b << endl;
-  ret->push_back(make_pair(get_curr_path(), to_string(b)));
+  ret->push_back(make_pair(get_curr_path(), optional_string_t{to_string(b)}));
   if (curr_path.back().second.size() > 0) {
     curr_path.back().second.back()++;
   }
@@ -123,7 +124,7 @@ int parser_ctx::process_number(const string& n)
 {
   //cout << __func__ << endl;
   //cout << get_curr_path() << ": " << n << endl;
-  ret->push_back(make_pair(get_curr_path(), n));
+  ret->push_back(make_pair(get_curr_path(), optional_string_t{n}));
   if (curr_path.back().second.size() > 0) {
     curr_path.back().second.back()++;
   }
@@ -134,7 +135,7 @@ int parser_ctx::process_string(const string& s)
 {
   //cout << __func__ << endl;
   //cout << get_curr_path() << ": " << s << endl;
-  ret->push_back(make_pair(get_curr_path(), s));
+  ret->push_back(make_pair(get_curr_path(), optional_string_t{s}));
   if (curr_path.back().second.size() > 0) {
     curr_path.back().second.back()++;
   }
@@ -253,9 +254,9 @@ static yajl_callbacks cbs = {
   reformat_end_array
 };
 
-vector<pair<path_t, string>> from_json(const string& json_s)
+vector<pair<path_t, optional_string_t>> from_json(const string& json_s)
 {
-  vector<pair<path_t, string>> ret;
+  vector<pair<path_t, optional_string_t>> ret;
   parser_ctx ctx(&ret);
   
   auto hand = yajl_alloc(&cbs, NULL, &ctx);

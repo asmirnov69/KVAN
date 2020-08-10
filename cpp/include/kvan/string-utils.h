@@ -15,4 +15,6 @@ vector<string> string_strip(const vector<string>&);
 string evaluate_dollar_var_expr(const string& dv_expr);
 string getusername();
 
+string replace_all(string str, const string& from, const string& to);
+
 #endif

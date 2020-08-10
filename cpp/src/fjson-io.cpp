@@ -4,6 +4,10 @@ using namespace std;
 #include <kvan/string-utils.h>
 #include <kvan/fjson-io.h>
 
+void FJSONVisitor::visit_null(const LOBKey& path)
+{
+}
+
 void FJSONVisitor::visit_key(const LOBKey& path)
 {
 }
