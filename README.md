@@ -8,3 +8,10 @@ Define PYTHONPATH env as
 ```
 export PYTHONPATH=<KVAN-git-checkout-dir>/python
 ```
+
+To verify KVAN code is operational:
+
+```
+cd <KVAN-git-checkout-dir>/python/tests
+python test-fuargs.py test_fuargs[a=1,b=2,c=3]
+```
