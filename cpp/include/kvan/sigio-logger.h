@@ -7,7 +7,7 @@
 namespace kvan {
   class logger {
   public:
-    static void setup(const char* log_fn);
+    static void setup(const char* log_fn, bool output_to_console = true);
   private:
     static int read_fd, write_fd;
     static int saved_tty_fd, logger_fd;

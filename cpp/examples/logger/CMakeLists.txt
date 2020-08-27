@@ -1,4 +1,4 @@
-project(logger.tsk)
+project(logger-test.tsk)
 
 include_directories(${top}/cpp/include)
 link_directories(${YAJL_HOME}/lib)
