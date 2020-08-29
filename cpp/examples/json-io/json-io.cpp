@@ -5,6 +5,7 @@
 #include <iterator>
 using namespace std;
 
+#include <kvan/sigio-logger.h>
 #include <kvan/fuargs.h>
 #include <kvan/json-io.h>
 #include <kvan/fjson-io.h>
@@ -99,6 +100,7 @@ ADD_ACTION("read_json[fn]", [](const Fuargs::args& args) {
   });
 
 ADD_ACTION("read_json_person[fn]", [](const Fuargs::args& args) {
+  kvan::logger::setup("./logger.txt");
     string fn = args.get("fn");
     ifstream in(fn);
     if (!in) {
@@ -142,5 +144,6 @@ ADD_ACTION("read_json_band[fn]", [](const Fuargs::args& args) {
 
 int main(int argc, char** argv)
 {
+  kvan::logger::setup("./logger.txt");
   Fuargs::exec_actions(argc, argv);
 }
