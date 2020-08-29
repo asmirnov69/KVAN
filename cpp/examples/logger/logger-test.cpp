@@ -10,6 +10,7 @@ ADD_ACTION("test_logger[]", [](const Fuargs::args& args) {
     //kvan::logger::setup("./logger.txt", output_to_console);
 
     kvan::logger_setup();
+    kvan::sigio_setup();
 
     for (int i = 0; i < 5; i++) {
       cout << "this " << "a " << "test" << endl;
@@ -24,6 +25,7 @@ ADD_ACTION("test_logger_crash[]", [](const Fuargs::args& args) {
     //kvan::logger::setup("./logger.txt", output_to_console);
 
     kvan::logger_setup();
+    kvan::sigio_setup();
 
     for (int i = 0; i < 5; i++) {
       cout << "this " << "a " << "test" << endl;
