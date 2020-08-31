@@ -35,3 +35,23 @@ std::string to_isoformat(double utcts, bool microseconds)
   
   return "::nant::";
 }
+
+long long hires_ts_now()
+{
+  std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+  auto duration = now.time_since_epoch();
+  auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
+
+  return nanoseconds.count();
+}
+
+#if 0 // old implementation
+{
+  // from https://stackoverflow.com/a/34781413/1181482
+  using clock = std::chrono::high_resolution_clock;
+  using dsec = std::chrono::duration<double, std::milli>;
+  using tps = std::chrono::time_point<clock, dsec>;
+  tps tp = clock::now();
+  return tp.time_since_epoch().count();
+}
+#endif
