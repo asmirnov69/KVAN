@@ -24,8 +24,10 @@ public:
 
   static int add_action(const string& action_proto, action_func_t);
   static void print_known_actions();
-  static void exec_actions(int argc, char** argv);
-
+  static void exec_actions(int argc, char** argv,
+			   bool setup_log_annotation = true,
+			   bool setup_logger = true);
+  
 private:
   // first: action name, second: all action args
   static pair<string, vector<string>>

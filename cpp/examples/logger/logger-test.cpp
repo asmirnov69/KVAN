@@ -38,7 +38,5 @@ ADD_ACTION("test_logger_crash[]", [](const Fuargs::args& args) {
 
 int main(int argc, char** argv)
 {
-  kvan::logger_setup(argv[0]);
-  kvan::sigio_setup(argv[0]);
   Fuargs::exec_actions(argc, argv);
 }

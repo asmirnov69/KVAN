@@ -8,19 +8,10 @@ using namespace std;
 
 #include <signal.h>
 
-#include <kvan/fuargs.h>
-
 namespace kvan {
   string get_log_fn(const char* argv0);
-
-  void logger_setup(const char* argv0 = Fuargs::argv[0]);
-  void sigio_setup(const char* argv0 = Fuargs::argv[0]);
-
-  int write_fd = -1;
-  int read_fd = -1;
-  int logger_fd = -1;
-  int saved_tty_fd = -1;
-  void handler(int sig, siginfo_t *sinfo, void *value);
+  void log_annotation_setup();
+  void logger_setup(const char* argv0);
 
   class mt_stdout_streambuf : public streambuf
   {
@@ -34,9 +25,6 @@ namespace kvan {
     streambuf* sink = nullptr;
     std::mutex m_;
   };
-
-  
-  
 };
 
 #endif

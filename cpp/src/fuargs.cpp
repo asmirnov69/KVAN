@@ -6,6 +6,7 @@ using namespace std;
 
 #include <kvan/string-utils.h>
 #include <kvan/fuargs.h>
+#include <kvan/logger.h>
 
 map<string, pair<vector<string>, string>> Fuargs::action_protos;
 map<string, Fuargs::action_func_t> Fuargs::actions;
@@ -86,7 +87,9 @@ bool Fuargs::verify_action_args(const string& action_name,
   return args.is_compatible_args_proto_list(args_proto_list);
 }
 
-void Fuargs::exec_actions(int argc, char** argv)
+void Fuargs::exec_actions(int argc, char** argv,
+			  bool setup_log_annotation,
+			  bool setup_logger)
 { 
   Fuargs::argc = argc;
   Fuargs::argv = argv;
@@ -111,6 +114,15 @@ void Fuargs::exec_actions(int argc, char** argv)
     if (!verify_action_args(action, args)) {
       throw runtime_error("verify_action_args failed");
     }
+
+    if (setup_log_annotation) {
+      kvan::log_annotation_setup();
+    }
+
+    if (setup_logger) {
+      kvan::logger_setup(Fuargs::argv[0]);
+    }
+    
     bool res = (*it).second(args);
     exit(res ? 0 : 1);
   } else {

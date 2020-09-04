@@ -144,6 +144,5 @@ ADD_ACTION("read_json_band[fn]", [](const Fuargs::args& args) {
 
 int main(int argc, char** argv)
 {
-  kvan::logger_setup();
-  Fuargs::exec_actions(argc, argv);
+  Fuargs::exec_actions(argc, argv, false, false);
 }

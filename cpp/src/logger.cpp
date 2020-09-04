@@ -14,6 +14,11 @@ namespace fs = std::experimental::filesystem;
 #include <kvan/fuargs.h>
 #include <kvan/time-utils.h>
 
+namespace kvan {
+  int logger_fd = -1;
+  int saved_tty_fd = -1;
+}
+
 string kvan::get_log_fn(const char* argv0)
 {
   fs::path logdir = fs::path(getenv("HOME")) / "log";
@@ -25,15 +30,6 @@ string kvan::get_log_fn(const char* argv0)
 
   auto logfile_fn = fs::path(argv0).filename().string() + "." + to_string(getpid()) + ".log";
   return (logdir / logfile_fn).string();
-}
-  
-void kvan::logger_setup(const char* argv0)
-{
-  auto log_fn = get_log_fn(argv0);
-  auto cout_a_b = new kvan::mt_stdout_streambuf(cout.rdbuf());
-  auto cerr_a_b = new kvan::mt_stdout_streambuf(cerr.rdbuf());
-  cout.rdbuf(cout_a_b);
-  cerr.rdbuf(cerr_a_b);
 }
 
 kvan::mt_stdout_streambuf::mt_stdout_streambuf(streambuf* sbuf)
@@ -69,42 +65,15 @@ streambuf::int_type kvan::mt_stdout_streambuf::overflow(int_type c)
   return traits_type::to_int_type(c);
 }
 
-// .....................................................
-
-void kvan::handler(int sig, siginfo_t *sinfo, void *value)
+void kvan::log_annotation_setup()
 {
-  char read_buf[PIPE_BUF];
-  ssize_t read_res = 0;
-
-  do {
-    read_res = read(read_fd, read_buf, PIPE_BUF);
-    if (read_res > 0) {
-      if (saved_tty_fd != -1) {
-	write(saved_tty_fd, read_buf, read_res);
-      }
-      if (logger_fd != -1) {
-	write(logger_fd, read_buf, read_res);
-      }
-    }
-  } while (read_res > 0);
+  auto cout_a_b = new kvan::mt_stdout_streambuf(cout.rdbuf());
+  auto cerr_a_b = new kvan::mt_stdout_streambuf(cerr.rdbuf());
+  cout.rdbuf(cout_a_b);
+  cerr.rdbuf(cerr_a_b);
 }
 
-static void set_fd_flags(int fd)
-{
-  if (fcntl(fd, F_SETSIG, SIGIO) == -1) {
-    throw runtime_error("kvan::logger::setup: fnctl to set F_SETSIG failed");
-  }
-  
-  if (fcntl(fd, F_SETOWN, getpid()) == -1) {
-    throw runtime_error("kvan::logger::setup: fnctl to set F_SETOWN failed");
-  }
-
-  auto flags = fcntl(fd, F_GETFL);
-  if (flags >= 0 && fcntl(fd, F_SETFL, flags | O_ASYNC ) == -1)
-    throw runtime_error("kvan::logger::setup: fnctl F_SETFL to set O_ASYNC failed");
-}
-
-void kvan::sigio_setup(const char* argv0)
+void kvan::logger_setup(const char* argv0)
 {
   auto log_fn = get_log_fn(argv0);
   logger_fd = ::open(log_fn.c_str(),
@@ -127,26 +96,8 @@ void kvan::sigio_setup(const char* argv0)
       write(kvan::logger_fd, m.str().c_str(), m.str().size());
     },
     0);
-    
-  int fds[2];
-  if (pipe2(fds, O_DIRECT | O_NONBLOCK) != 0) {
-    throw runtime_error("kvan::logger::setup: pipe2() failed");
-  }
-  read_fd = fds[0]; write_fd = fds[1];
-
-  struct sigaction act;
-  act.sa_sigaction = handler;
-  act.sa_flags = 0;
-  act.sa_flags = SA_SIGINFO;
-  sigemptyset(&act.sa_mask);
-  if (sigaction(SIGIO, &act, NULL) == -1) {
-    throw runtime_error("kvan::logger::setup: attempt to set up handler for SIGIO failed");
-  }
-
-  /* arrange to get the signal */
-  set_fd_flags(read_fd);
-
+  
   saved_tty_fd = dup(1);
-  dup2(write_fd, 1);
-  dup2(write_fd, 2);
+  dup2(logger_fd, 1);
+  dup2(logger_fd, 2);
 }
