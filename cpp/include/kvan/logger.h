@@ -8,11 +8,13 @@ using namespace std;
 
 #include <signal.h>
 
+#include <kvan/fuargs.h>
+
 namespace kvan {
   string get_log_fn(const char* argv0);
 
-  void logger_setup();
-  void sigio_setup();
+  void logger_setup(const char* argv0 = Fuargs::argv[0]);
+  void sigio_setup(const char* argv0 = Fuargs::argv[0]);
 
   int write_fd = -1;
   int read_fd = -1;

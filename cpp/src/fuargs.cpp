@@ -88,13 +88,13 @@ bool Fuargs::verify_action_args(const string& action_name,
 
 void Fuargs::exec_actions(int argc, char** argv)
 { 
+  Fuargs::argc = argc;
+  Fuargs::argv = argv;
+
   if (argc < 2) {
     print_known_actions();
     exit(2);
   }
-
-  Fuargs::argc = argc;
-  Fuargs::argv = argv;
   
   ostringstream cmd_line_s;
   for (int i = 1; i < argc; i++) {

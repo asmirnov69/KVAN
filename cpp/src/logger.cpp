@@ -23,13 +23,13 @@ string kvan::get_log_fn(const char* argv0)
     }
   }
 
-  auto logfile_fn = fs::path(Fuargs::argv[0]).filename().string() + "." + to_string(getpid()) + ".log";
+  auto logfile_fn = fs::path(argv0).filename().string() + "." + to_string(getpid()) + ".log";
   return (logdir / logfile_fn).string();
 }
   
-void kvan::logger_setup()
+void kvan::logger_setup(const char* argv0)
 {
-  auto log_fn = get_log_fn(Fuargs::argv[0]);
+  auto log_fn = get_log_fn(argv0);
   auto cout_a_b = new kvan::mt_stdout_streambuf(cout.rdbuf());
   auto cerr_a_b = new kvan::mt_stdout_streambuf(cerr.rdbuf());
   cout.rdbuf(cout_a_b);
@@ -104,9 +104,9 @@ static void set_fd_flags(int fd)
     throw runtime_error("kvan::logger::setup: fnctl F_SETFL to set O_ASYNC failed");
 }
 
-void kvan::sigio_setup()
+void kvan::sigio_setup(const char* argv0)
 {
-  auto log_fn = get_log_fn(Fuargs::argv[0]);
+  auto log_fn = get_log_fn(argv0);
   logger_fd = ::open(log_fn.c_str(),
 		     O_CREAT|O_WRONLY|O_APPEND,
 		     S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
