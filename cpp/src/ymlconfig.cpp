@@ -17,6 +17,8 @@ bool operator<(const YMLConfigPath& l, const YMLConfigPath& r)
 YMLConfigPath::YMLConfigPath(const vector<string>& curr_path,
 			     const vector<int>& curr_index)
 {
+  path.push_back(make_pair("", -1));
+
   if (curr_path.size() != curr_index.size()) {
     throw runtime_error("YMLConfigPath::YMLConfigPath: path and index size mismatch");
   }
@@ -27,6 +29,7 @@ YMLConfigPath::YMLConfigPath(const vector<string>& curr_path,
 
 YMLConfigPath::YMLConfigPath()
 {
+  path.push_back(make_pair("", -1));
 }
 
 bool YMLConfigPath::is_subpath_of(const YMLConfigPath& p)
@@ -35,13 +38,18 @@ bool YMLConfigPath::is_subpath_of(const YMLConfigPath& p)
   if (this->path.size() <= p.path.size()) {
     ret = true;
     for (size_t i = 0; i < this->path.size(); i++) {
-      if (!(p.path[i].first == this->path[i].first
-	    && p.path[i].second == this->path[i].second)) {
+      if (!((p.path[i].first == this->path[i].first)
+	    &&
+	    (this->path[i].second == -1 || p.path[i].second == this->path[i].second)
+	    )) {
 	ret = false;
 	break;
       }
     }
   }
+
+  //cout << "is_subpath:" << this->to_string() << " " << p.to_string()
+  //     << " --> " << ret << endl;
   return ret;
 }
 
@@ -346,22 +354,47 @@ void YMLConfig::parse_file__(const string& yml_fn__,
 void YMLConfig::dump() const
 {
   if (this->values.size() == 0) {
-    cout << "-- empty YMLConfig --" << endl;
+    cout << "-- empty YMLConfig --, stem " << stem.to_string() << endl;
     return;
   }
-  
+
+  cout << "stem: " << stem.to_string() << endl;
   for (const auto& [key, value]: this->values) {
     cout << key.to_string() << " --> " << value << endl;
   }
 }
 
+YMLConfig YMLConfig::get_config_list_element(int elem_index) const
+{
+  YMLConfig ret;
+  for (const auto& [key, value]: this->values) {
+    //cout << "get_config_list_element: " << key.to_string() << endl;
+    if (key.path[0].second == elem_index) {
+      YMLConfigPath new_path;
+      copy(key.path.begin() + 1, key.path.end(),
+	   back_inserter(new_path.path));
+      ret.values.push_back(make_pair(new_path, value));
+      ret.values_map[new_path] = value;
+    }
+  }
+  return ret;
+}
+
 YMLConfig YMLConfig::get_config(const char* path_) const
 {
   YMLConfigPath path; path.from_string(path_);
+  //cout << "path: " << path.to_string() << endl;
+  
   YMLConfig ret(path_);
+  ret.stem = path;
   for (const auto& [key, value]: this->values) {
+    //cout << "key: " << key.to_string() << endl;
     if (path.is_subpath_of(key)) {
       YMLConfigPath new_path;
+      if (path.path[1].second == -1 && key.path[1].second >= 0) {
+	ret.config_list_nof_elems = key.path[1].second;
+	new_path.path[0].second = key.path[1].second;
+      }
       copy(key.path.begin() + path.path.size(), key.path.end(),
 	   back_inserter(new_path.path));
       ret.values.push_back(make_pair(new_path, value));
@@ -378,7 +411,8 @@ string YMLConfig::get(const char* path) const
   auto it = this->values_map.find(p);
   if (it == this->values_map.end()) {
     ostringstream m;
-    m << "YMLConfig::get: no such path: " << path << " at node " << stem << endl;
+    m << "YMLConfig::get: no such path: " << path << " at node "
+      << stem.to_string() << endl;
     throw runtime_error(m.str());
   }
   return (*it).second;

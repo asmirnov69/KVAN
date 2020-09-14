@@ -18,14 +18,14 @@ tracers:
       row_type:
         ts: double
         sid: int
-	price: double
-	size: int
+        price: double
+        size: int
     quotes:
       type: df
       row_type:
         ts: double
-	sid: int
-	bid: double
-	bsize: int
-	ask: double
-	asize: int
+        sid: int
+        bid: double
+        bsize: int
+        ask: double
+        asize: int

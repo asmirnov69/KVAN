@@ -1,0 +1,13 @@
+name: test
+initial_points:
+  - body: B1
+    x0: 10.0
+    y0: 10.0
+    vx0: 1.0
+    vy0: 1.0
+  - body: B2
+    x0: -10.0
+    y0: -10.0
+    vx0: -1.0
+    vy0: 1.0
+    

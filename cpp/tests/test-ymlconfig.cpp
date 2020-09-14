@@ -55,10 +55,29 @@ ADD_ACTION(parse_yml_proto, [](const Fuargs::args& args) {
   return true;
   });
 
+ADD_ACTION("parse_run_config[]", [](const Fuargs::args&) {
+    YMLConfig C;
+    C.parse("run-config.yml");
+    C.dump();
+    cout << "--------" << endl;
+
+    auto C_initial_points = C.get_config("initial_points");
+    C_initial_points.dump();
+    cout << C_initial_points.is_config_list() << endl;
+    cout << "---------" << endl;
+
+    auto nof_config_elems = C_initial_points.get_nof_list_elements();
+    cout << "nof config elems: " << nof_config_elems << endl;
+    for (int i = 0; i < nof_config_elems; i++) {
+      cout << "config point: " << i << endl;
+      auto C_initial_points_i = C_initial_points.get_config_list_element(i);
+      C_initial_points_i.dump();
+    }
+
+    return true;
+  });
 
 int main(int argc, char** argv)
 {
-  Fuargs::exec_actions(argc, argv);
+  Fuargs::exec_actions(argc, argv, false, false);
 }
-
-  
