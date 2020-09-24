@@ -32,7 +32,7 @@ inline vector<string> to_fjson(ostream& out, const vector<T>& v)
 
   CSVColumnsVisitor cols_v;
   LOBKey k;
-  sd.visit_members(&cols_v, &k, v[0]);
+  sd.visit_members(&cols_v, &k, T());
   vector<string> columns = string_join(cols_v.cols, '.');
     
   out << "[";

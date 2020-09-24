@@ -117,7 +117,7 @@ inline StructDescriptor get_struct_descriptor<Contact>()
 
 struct Person
 {
-  vector<string> sss;
+  //vector<string> sss;
   FullName name;
   Address address;
   Contact c, backup_c;
@@ -129,7 +129,7 @@ template <>
 inline StructDescriptor get_struct_descriptor<Person>()
 {
   static const StructDescriptor sd = {
-    make_member_descriptor("sss", &Person::sss),
+    //make_member_descriptor("sss", &Person::sss),
     make_member_descriptor("name", &Person::name),
     make_member_descriptor("address", &Person::address),
     make_member_descriptor("c", &Person::c),

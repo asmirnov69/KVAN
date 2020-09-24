@@ -12,12 +12,12 @@ using namespace std;
 
 #include "person.h"
 
-Person p1{.sss = vector<string>{},
+Person p1{//.sss = vector<string>{},
     .name = FullName{.first_name = "John", .last_name = "Smith", .salutation = Salutation::MR},
     .address = Address{.line1 = "1 Main St", .line2 = "", .city = "New York", .state = State::NY, .zip = "10001"},
        .c = Contact{.phone="123", .email="a@b.c"}, .backup_c = Contact(),
 						      .age = 42, .height = 1.72};
-Person p2{.sss = vector<string>{},
+Person p2{//.sss = vector<string>{},
     .name = FullName{.first_name = "Jim", .last_name = "Morrison", .salutation = Salutation::MR},
     .address = Address{.line1 = "1 Main St", .line2 = "", .city = "Boston", .state = State::MA, .zip = "02142"},
        .c = Contact(), .backup_c = Contact(),
@@ -117,6 +117,16 @@ ADD_ACTION("read_json_person[fn]", [](const Fuargs::args& args) {
     vector<Person> pp = {p};
     to_fjson(cout, pp);
     cout << endl;
+
+    return true;
+  });
+
+ADD_ACTION("empty_fjson[]", [](const Fuargs::args& args) {
+    vector<Person> pp;
+    //pp.push_back(p1);
+    auto cols = to_fjson(cout, pp);
+    cout << endl;
+    cout << "cols: " << string_join(cols, ',') << endl;
 
     return true;
   });
