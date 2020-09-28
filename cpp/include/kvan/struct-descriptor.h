@@ -10,6 +10,8 @@
 #include <memory>
 #include <any>
 #include <initializer_list>
+#include <cfloat>
+#include <cmath>
 using namespace std;
 
 #include <kvan/addl-type-traits.h>

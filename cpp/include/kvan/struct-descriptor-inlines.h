@@ -14,6 +14,33 @@ MemberDescriptorT<MT, T>::MemberDescriptorT(const char* member_name, MT T::*mptr
   this->mptr = mptr;
 }
 
+template <class T> T fundamental_from_string(const string& s, bool is_null)
+{
+  T ret;
+  if constexpr(is_floating_point<T>::value) {
+      ret = is_null ? nan("1") : stod(s);
+    } else {
+    istringstream ss(s); ss >> ret;
+  }
+  return ret;
+}
+
+template <class T>
+inline pair<string, bool> fundamental_to_string(T v)
+{
+  pair<string, bool> ret; // value, is_null
+  if constexpr(is_floating_point<T>::value) {
+    ret.first = to_string(v);
+    ret.second = isnan(v);
+  } else {
+    ostringstream out; out << v;
+    //ret.first = to_string(v);
+    ret.first = out.str();
+    ret.second = false;
+  }
+  return ret;
+}
+
 template <class MT, class T> inline
 void MemberDescriptorT<MT, T>::set_value__(void* o,
 					   const optional_string_t& new_value,
@@ -41,10 +68,11 @@ void MemberDescriptorT<MT, T>::set_value__(void* o,
       }	
       member_v = new_value.value();
     } else if constexpr(is_fundamental<MT>::value) {
-      if (!new_value.has_value()) {
-	throw JSONError("fundamental type member must have non-null value");
-      }	
-      istringstream vin(new_value.value()); vin >> member_v;
+      if (new_value.has_value()) {
+	member_v = fundamental_from_string<MT>(new_value.value(), false);
+      } else {
+	member_v = fundamental_from_string<MT>("", true);
+      }
     } else if constexpr(is_vector<MT>::value) {
       if (!new_value.has_value()) {
 	throw JSONError("vector member must have non-null value");
@@ -75,7 +103,9 @@ void MemberDescriptorT<MT, T>::visit_member(StructVisitor* visitor, LOBKey* curr
       } else if constexpr(is_string<MT>::value) {
 	visitor->visit_string(*curr_vpath, member_v);
       } else if constexpr(is_fundamental<MT>::value) {
-	visitor->visit_fundamental(*curr_vpath, to_string(member_v));
+	auto conv_v = fundamental_to_string<MT>(member_v);
+	visitor->visit_fundamental(*curr_vpath,
+				   conv_v.second ? "null" : conv_v.first);
       } else if constexpr(is_vector<MT>::value) {
 	VectorDescriptorT<MT> vd;
 	vd.visit_vector(visitor, curr_vpath, member_v);

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <iterator>
+#include <cmath>
 using namespace std;
 
 #include <kvan/logger.h>
@@ -16,7 +17,7 @@ Person p1{//.sss = vector<string>{},
     .name = FullName{.first_name = "John", .last_name = "Smith", .salutation = Salutation::MR},
     .address = Address{.line1 = "1 Main St", .line2 = "", .city = "New York", .state = State::NY, .zip = "10001"},
        .c = Contact{.phone="123", .email="a@b.c"}, .backup_c = Contact(),
-						      .age = 42, .height = 1.72};
+						      .age = 42, .height = nan("1")};
 Person p2{//.sss = vector<string>{},
     .name = FullName{.first_name = "Jim", .last_name = "Morrison", .salutation = Salutation::MR},
     .address = Address{.line1 = "1 Main St", .line2 = "", .city = "Boston", .state = State::MA, .zip = "02142"},
@@ -56,7 +57,7 @@ ADD_ACTION("write_json[]", [](const Fuargs::args&) {
     persons.push_back(p2);
     persons.push_back(p2);
 
-#if 1
+#if 0
     Band b;
     b.name = "ura";
     b.band_members = persons;
