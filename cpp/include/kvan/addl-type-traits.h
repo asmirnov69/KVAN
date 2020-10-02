@@ -3,6 +3,7 @@
 #define __KVAN_ADDL_TYPE_TRAITS__HH__
 
 #include <type_traits>
+#include <string>
 #include <vector>
 
 // from https://stackoverflow.com/a/57812868/1181482
