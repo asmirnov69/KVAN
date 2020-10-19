@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <string>
 #include <vector>
+#include <cxxabi.h>
 
 // from https://stackoverflow.com/a/57812868/1181482
 template<typename T>
@@ -23,5 +24,14 @@ template <typename... Args> struct is_vector<std::vector<Args...>> : std::true_t
 // from https://stackoverflow.com/a/33414109/1181482
 template<typename T>
 struct assert_false : std::false_type {};
+
+inline string demangle(const char* typeinfo_name)
+{
+  int status;
+  char * demangled = abi::__cxa_demangle(typeinfo_name,0,0,&status);
+  std::string ret(demangled);
+  free(demangled);
+  return ret.substr(ret.find_last_of(':')+1);
+}
 
 #endif
