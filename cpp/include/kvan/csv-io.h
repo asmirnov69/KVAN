@@ -3,6 +3,9 @@
 #define __KVAN_VECTOR_CSV_IO__HH__
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
 using namespace std;
 
 #include <kvan/struct-descriptor.h>
@@ -102,6 +105,19 @@ void from_csv(vector<T>* v, istream& in)
     v->push_back(new_v);
     line_no++;
   }
+}
+
+template <class T> inline
+void from_csv(vector<T>* v, const char* csv_fn)
+{
+  ifstream csv_in(csv_fn);
+  if (!csv_in) {
+    ostringstream m;
+    m << "from_csv: can't open file " << csv_fn;
+    throw runtime_error(m.str());
+  }
+
+  from_csv(v, csv_in);
 }
 
 
