@@ -181,9 +181,9 @@ static Fuargs::args parse_action_args(const string& action_args_s)
   
   string s = action_args_s;
   for (smatch m; regex_search(s, m, parsing_re); s = m.suffix()) {
-    cout << m.size() << " " << m[0] << "|  |" << m.suffix() << endl;
+    //cout << m.size() << " " << m[0] << "|  |" << m.suffix() << endl;
     if (m.size() == 3) {
-      cout << "'" << m[1] << "' ==>> '" << m[2] << "'" << endl;
+      //cout << "'" << m[1] << "' ==>> '" << m[2] << "'" << endl;
       string key(m[1].str());
       string value(m[2].str());
       if (auto it = ret.arg_map.find(key); it != ret.arg_map.end()) {
@@ -222,7 +222,7 @@ pair<string, Fuargs::args> Fuargs::parse_action(const string& action_s)
   
   auto action = m[1].str();
   auto action_args_s = m[2].str();
-  cout << "action_args_s: '" << action_args_s << "'" << endl;
+  //cout << "action_args_s: '" << action_args_s << "'" << endl;
   auto action_args = parse_action_args(action_args_s);
   
   return make_pair(action, action_args);

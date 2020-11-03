@@ -55,3 +55,35 @@ long long hires_ts_now()
   return tp.time_since_epoch().count();
 }
 #endif
+
+double to_utctimestamp(const char* t, const char* fmt)
+{
+  struct tm tm;
+  //cout << "tm.isdst: " << tm.tm_isdst << endl;
+  strptime(t, fmt, &tm);
+  tm.tm_isdst = -1; // nasty, explained at https://stackoverflow.com/a/24185697/1181482
+  time_t res = mktime(&tm);
+  return res;
+}
+
+std::string format_utctimestamp(double utcts, const char* fmt)
+{
+  time_t rawtime = utcts;
+  struct tm ts;
+  char buf[80];
+  
+  // Format time, "ddd yyyy-mm-dd hh:mm:ss zzz"
+  auto localtime_res = localtime(&rawtime);
+  if (localtime_res) {
+    ts = *localtime_res;
+    strftime(buf, sizeof(buf), fmt, &ts);
+    string ret(buf);
+
+    double dd;
+    double millisecs = modf(utcts, &dd);
+    ret += to_string(millisecs).substr(1);
+    return ret;
+  }
+  
+  return "::nant::";
+}
