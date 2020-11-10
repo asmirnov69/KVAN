@@ -417,3 +417,9 @@ string YMLConfig::get(const char* path) const
   }
   return (*it).second;
 }
+
+bool YMLConfig::has(const char* path) const
+{
+  YMLConfigPath p; p.from_string(path);
+  return this->values_map.find(p) != this->values_map.end();
+}

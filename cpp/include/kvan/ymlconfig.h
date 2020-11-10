@@ -49,7 +49,8 @@ public:
   explicit YMLConfig(bool debug = false, bool dry_run = false);
   void set_pp_pathes(const vector<string>& pp_pathes);
   void parse(const string& yml);
-  
+
+  bool has(const char* path) const;
   std::string get(const char* path) const;
   YMLConfig get_config(const char* path) const;
 

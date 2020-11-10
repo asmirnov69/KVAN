@@ -59,6 +59,7 @@ streambuf::int_type kvan::mt_stdout_streambuf::overflow(int_type c)
     std::ostream os(sink);
     std::unique_lock<std::mutex> lock(m_);
     os << line_buf.str();
+    os.flush();
     line_buf.str("");
     line_buf.clear();
   }
