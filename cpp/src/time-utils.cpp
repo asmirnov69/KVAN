@@ -1,3 +1,5 @@
+#include <iostream>
+#include <iomanip>
 #include <string>
 #include <chrono>
 #include <cmath>
@@ -66,8 +68,21 @@ double to_utctimestamp(const char* t, const char* fmt)
   return res;
 }
 
-std::string format_utctimestamp(double utcts, const char* fmt)
+double to_utctimestamp(const char* t_date, const char* t_date_fmt,
+		       const char* t_time, const char* t_time_fmt)
 {
+  string t = string(t_date) + " " + string(t_time);
+  string fmt = string(t_date_fmt) + " " + string(t_time_fmt);
+  return to_utctimestamp(t.c_str(), fmt.c_str());
+}
+
+std::string format_utctimestamp(double utcts, const char* fmt,
+				bool add_sec_fractions)
+{
+  if (utcts == 0.0 || isnan(utcts)) {
+    return "::nant::";
+  }
+  
   time_t rawtime = utcts;
   struct tm ts;
   char buf[80];
@@ -79,9 +94,12 @@ std::string format_utctimestamp(double utcts, const char* fmt)
     strftime(buf, sizeof(buf), fmt, &ts);
     string ret(buf);
 
-    double dd;
-    double millisecs = modf(utcts, &dd);
-    ret += to_string(millisecs).substr(1);
+    if (add_sec_fractions) {
+      double dd;
+      double millisecs = modf(utcts, &dd);
+      ret += to_string(millisecs).substr(1);
+    }
+
     return ret;
   }
   
