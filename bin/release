@@ -64,7 +64,7 @@ def make_release():
     exe_cmd(cmd)
 
     os.unlink("./MANIFEST.txt")
-    print("release archive created: {release_archive_pn}")
+    print(f"release archive created: {release_archive_pn}")
         
 @fuargs.action
 def show_manifest(tarball):
