@@ -44,7 +44,11 @@ def make_release():
         return False
     print(f"current tag: {curr_tag}")
     print(f"current_commit: {curr_commit}")
-
+    release_archive_pn = os.path.join(archive_dir, f"{curr_tag}.tgz")
+    if os.path.exists(release_archive_pn):
+        print(f"PROBLEM -- release archive exists: {release_archive_pn}")
+        return False
+    
     repo_name = os.path.basename(repo_top_dir)    
     if curr_tag.split("-")[0] != repo_name:
         print("tag {curr_tag} can't be used for making release, must be like {repo_name}-<...>")
@@ -58,7 +62,6 @@ def make_release():
         print(f"commit: {curr_commit}", file = fd)
         print(f"tag: {curr_tag}", file = fd)
 
-    release_archive_pn = os.path.join(archive_dir, f"{curr_tag}.tgz")
     cmd = f"tar czf {release_archive_pn} --transform='s/^\./{curr_tag}/' --exclude=.git ."
     print(cmd)
     exe_cmd(cmd)
