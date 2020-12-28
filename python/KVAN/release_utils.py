@@ -1,6 +1,6 @@
 import subprocess, os
 
-verbose = True
+verbose = False
 def exe_cmd(cmd, raise_exception = True, split_output = True):
     if verbose:
         print(f"exe_cmd: {cmd}")
@@ -27,7 +27,6 @@ def get_curr_commit():
 def git_check_mods():
     cmd = "git diff-index --name-only --ignore-submodules HEAD --"
     out = exe_cmd(cmd)
-    print("out: ", out)
     return len(out) > 0
 
 def git_get_repo_top_dir():
