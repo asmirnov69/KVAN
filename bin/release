@@ -14,7 +14,7 @@ def show_tag():
         return False
     
     if git_check_mods():
-        print(f"tag_release: local modifications found")
+        print(f"local modifications found")
         return False
 
     curr_commit = get_curr_commit()
