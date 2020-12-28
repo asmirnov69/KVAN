@@ -63,7 +63,6 @@ def make_release():
         print(f"tag: {curr_tag}", file = fd)
 
     cmd = f"tar czf {release_archive_pn} --transform='s/^\./{curr_tag}/' --exclude=.git ."
-    print(cmd)
     exe_cmd(cmd)
 
     os.unlink("./MANIFEST.txt")
@@ -73,7 +72,7 @@ def make_release():
 def show_manifest(tarball):
     verify_tarball(tarball, None)
     manifest_fn, manifest_ls = extract_manifest(tarball)
-    print("manifest file: {manifest_fn}")
+    print(f"manifest file: {manifest_fn}")
     for l in manifest_ls:
         print(l)
 
@@ -88,7 +87,7 @@ def install(tarball):
 
     exp_dest_dir = os.path.join(install_dir, manifest_tag)
     if os.path.exists(exp_dest_dir):
-        raise Exception("dest dir {dest_dir} already exists")
+        raise Exception(f"dest dir {exp_dest_dir} already exists")
 
     print(f"unpacking {tarball} into {exp_dest_dir}")
     unpack_tarball(tarball, install_dir)
@@ -103,7 +102,8 @@ def install(tarball):
         print(f"new symlink {release_symlink} to {exp_dest_dir}")
         os.symlink(exp_dest_dir, release_symlink)
 
-    print("tarball {tarball} released as {exp_dest_dir}, access symlink {release_symlink}")
+    print(f"tarball {tarball} released as {exp_dest_dir}")
+    print(f"access symlink {release_symlink}")
     print("all done")
 
     return True
