@@ -10,8 +10,9 @@ def exe_cmd(cmd, raise_exception = True, split_output = True):
 
     if e_code != 0:
         ret = None
-    else:
+    else:        
         ret = out.split("\n") if split_output else out
+        ret = [] if len(ret) == 1 and len(ret[0]) == 0 else ret
 
     return ret
     
