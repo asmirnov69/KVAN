@@ -17,13 +17,13 @@ def show_tag():
         print(f"tag_release: local modifications found")
         return False
 
-    curr_tag = get_curr_tag()
     curr_commit = get_curr_commit()
+    print(f"current commit: {curr_commit}")
+    curr_tag = get_curr_tag()
     if curr_tag == None:
         print("no tag found")
         return False
     print(curr_tag)
-    print(curr_commit)
     return True
     
 @fuargs.action
