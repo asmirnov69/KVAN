@@ -1,36 +1,11 @@
 #!/usr/bin/env python
 #
 import sys, os
-import subprocess
 from KVAN import fuargs
+from KVAN.release_utils import *
 
 archive_dir = os.path.join(os.environ['HOME'], 'release-archive')
-
-def exe_cmd(cmd, raise_exception = True):
-    e_code, out = subprocess.getstatusoutput(cmd)
-    if raise_exception and e_code != 0:
-        raise Exception(f"non-zero exit code: {cmd}")
-    return out if e_code == 0 else None
-    
-def get_curr_tag():
-    return exe_cmd("git describe --exact --tags --abbrev=0", False)
-
-def get_curr_commit():
-    return exe_cmd("git rev-parse HEAD", False)
-
-def git_check_mods():
-    cmd = "git diff-index --name-only --ignore-submodules HEAD --"
-    out = exe_cmd(cmd)
-    print(out)
-    return len(out) > 0
-
-def git_get_repo_top_dir():
-    return exe_cmd("git rev-parse --show-toplevel").strip()
-
-@fuargs.action
-def show_manifest(tarball):
-    release_tag = os.path.basename(tarball).replace(".tgz", "")
-    print(exe_cmd(f"tar zxfO {tarball} {release_tag}/MANIFEST.txt"))
+install_dir = "/home/asmirnov/tmp/philotymic"
 
 @fuargs.action
 def show_tag():
@@ -53,10 +28,11 @@ def show_tag():
     
 @fuargs.action
 def make_release():
-    if os.getcwd() != git_get_repo_top_dir():
+    repo_top_dir = git_get_repo_top_dir()
+    if os.getcwd() != repo_top_dir:
         print("current directory is not top of any git repo")
         return False
-    
+
     if git_check_mods():
         print(f"tag_release: local modifications found")
         return False
@@ -68,21 +44,66 @@ def make_release():
         return False
     print(f"current tag: {curr_tag}")
     print(f"current_commit: {curr_commit}")
+
+    repo_name = os.path.basename(repo_top_dir)    
+    if curr_tag.split("-")[0] != repo_name:
+        print("tag {curr_tag} can't be used for making release, must be like {repo_name}-<...>")
+        return False
     
     if not os.path.exists(archive_dir):
         os.makedirs(archive_dir)
         print(f"tag_release: release archive dir created: {archive_dir}")
 
-
     with open("./MANIFEST.txt", "w") as fd:
         print(f"commit: {curr_commit}", file = fd)
         print(f"tag: {curr_tag}", file = fd)
-        
-    cmd = f"tar czf ~/release-archive/{curr_tag}.tgz --transform='s/^\./{curr_tag}/' --exclude=.git ."
+
+    release_archive_pn = os.path.join(archive_dir, f"{curr_tag}.tgz")
+    cmd = f"tar czf {release_archive_pn} --transform='s/^\./{curr_tag}/' --exclude=.git ."
     print(cmd)
     exe_cmd(cmd)
 
     os.unlink("./MANIFEST.txt")
+    print("release archive created: {release_archive_pn}")
+        
+@fuargs.action
+def show_manifest(tarball):
+    verify_tarball(tarball, None)
+    manifest_fn, manifest_ls = extract_manifest(tarball)
+    print("manifest file: {manifest_fn}")
+    for l in manifest_ls:
+        print(l)
+
+@fuargs.action
+def install(tarball):
+    manifest_fn, manifest_ls = extract_manifest(tarball)
+    manifest_tag = get_manifest_tag(manifest_ls)
+    print(f"found tag: {manifest_tag}")
+
+    print(f"verifying tarball {tarball}")
+    verify_tarball(tarball, manifest_tag)
+
+    exp_dest_dir = os.path.join(install_dir, manifest_tag)
+    if os.path.exists(exp_dest_dir):
+        raise Exception("dest dir {dest_dir} already exists")
+
+    print(f"unpacking {tarball} into {exp_dest_dir}")
+    unpack_tarball(tarball, install_dir)
+
+    repo_name = manifest_tag.split("-")[0]
+    release_symlink = os.path.join(install_dir, repo_name)
+    if os.path.exists(release_symlink):
+        print(f"flipping symlink {release_symlink} to {exp_dest_dir}")
+        os.unlink(release_symlink)
+        os.symlink(exp_dest_dir, release_symlink)
+    else:
+        print(f"new symlink {release_symlink} to {exp_dest_dir}")
+        os.symlink(exp_dest_dir, release_symlink)
+
+    print("tarball {tarball} released as {exp_dest_dir}, access symlink {release_symlink}")
+    print("all done")
+
+    return True
     
 if __name__ == "__main__":
     fuargs.exec_actions(sys.argv[1:])
