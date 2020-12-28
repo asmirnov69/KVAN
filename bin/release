@@ -1,15 +1,16 @@
-#!/usr/bin/env python
+#!/usr/local/anaconda3/bin/python -B
 #
 import sys, os
 from KVAN import fuargs
 from KVAN.release_utils import *
 
 archive_dir = os.path.join(os.environ['HOME'], 'release-archive')
-install_dir = "/home/asmirnov/tmp/philotymic"
+install_dir = "/usr/local/philotymic"
 
 @fuargs.action
 def show_tag():
-    if os.getcwd() != git_get_repo_top_dir():
+    repo_top_dir = git_get_repo_top_dir()
+    if os.getcwd() != repo_top_dir:
         print("current directory is not top of any git repo")
         return False
     
@@ -23,6 +24,8 @@ def show_tag():
     if curr_tag == None:
         print("no tag found")
         return False
+    
+    verify_curr_tag(curr_tag, repo_top_dir)
     print(curr_tag)
     return True
     
@@ -37,26 +40,23 @@ def make_release():
         print(f"tag_release: local modifications found")
         return False
 
-    curr_tag = get_curr_tag()
     curr_commit = get_curr_commit()
+    curr_tag = get_curr_tag()
     if curr_tag == None:
-        print("tag_release: no tag found")
+        print("make_release: no tag found")
         return False
+    verify_curr_tag(curr_tag, repo_top_dir)
     print(f"current tag: {curr_tag}")
     print(f"current_commit: {curr_commit}")
+    
     release_archive_pn = os.path.join(archive_dir, f"{curr_tag}.tgz")
     if os.path.exists(release_archive_pn):
         print(f"PROBLEM -- release archive exists: {release_archive_pn}")
         return False
     
-    repo_name = os.path.basename(repo_top_dir)    
-    if curr_tag.split("-")[0] != repo_name:
-        print("tag {curr_tag} can't be used for making release, must be like {repo_name}-<...>")
-        return False
-    
     if not os.path.exists(archive_dir):
         os.makedirs(archive_dir)
-        print(f"tag_release: release archive dir created: {archive_dir}")
+        print(f"release archive dir created: {archive_dir}")
 
     with open("./MANIFEST.txt", "w") as fd:
         print(f"commit: {curr_commit}", file = fd)

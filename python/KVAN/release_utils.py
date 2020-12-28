@@ -53,6 +53,16 @@ def get_manifest_tag(manifest_ls):
     tag = tag[0].replace("tag: ", "")
     return tag
 
+def verify_curr_tag(curr_tag, repo_top_dir):
+    repo_name = os.path.basename(repo_top_dir)
+
+    if curr_tag.find("-") in [-1, 0]:
+        raise Exception(f"{curr_tag} is not good tag name for release, it should be in the form {repo-name}-<...>")
+
+    if curr_tag.split("-")[0] != repo_name:
+        raise Exception(f"tag {curr_tag} can't be used for making release, must be like {repo_name}-<...>")
+    
+
 def verify_tarball(tarball_pn, manifest_tag):
     if manifest_tag == None:
         manifest_fn, manifest_ls = extract_manifest(tarball_pn)
@@ -69,7 +79,7 @@ def unpack_tarball(tarball_pn, dest_dir):
         print(f"creating dest_dir {dest_dir}")
         os.makedirs(dest_dir)
         
-    cmd = f"tar zxf {tarball_pn} -C {dest_dir}"
+    cmd = f"tar zxf {tarball_pn} -C {dest_dir} --no-same-owner"
     exe_cmd(cmd)
     
     
