@@ -23,6 +23,8 @@ public:
   typedef function<bool(const Fuargs::args&)> action_func_t;
 
   static int add_action(const string& action_proto, action_func_t);
+  static int add_action(const string& action_proto, const string& action_descr,
+			action_func_t);  
   static void print_known_actions();
   static void exec_actions(int argc, char** argv,
 			   bool setup_log_annotation = true,
@@ -39,6 +41,7 @@ private:
 
   // key: action name, value: (action arg names, action descr)
   static map<string, pair<vector<string>, string>> action_protos;
+  static vector<string> action_protos_keys;
   // key: action name, value: function to be called
   static map<string, action_func_t> actions;
 };

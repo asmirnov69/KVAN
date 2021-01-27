@@ -9,6 +9,7 @@ using namespace std;
 #include <kvan/logger.h>
 
 map<string, pair<vector<string>, string>> Fuargs::action_protos;
+vector<string> Fuargs::action_protos_keys;
 map<string, Fuargs::action_func_t> Fuargs::actions;
 int Fuargs::argc{0};
 char** Fuargs::argv{nullptr};
@@ -52,17 +53,16 @@ void Fuargs::args::dump() const
   cerr << "---" << endl;
 }
 
-int Fuargs::add_action(const string& action_proto_s, action_func_t action_func)
+int Fuargs::add_action(const string& action_proto_s,
+		       action_func_t action_func)
 {
-  string action_proto, action_descr;
-  if (size_t idx = action_proto_s.find("\n");
-      idx != string::npos) {
-    action_proto = string(action_proto_s, 0, idx);
-    action_descr = string(action_proto_s, idx + 1);
-  } else {
-    action_proto = action_proto_s;
-  }
+  return Fuargs::add_action(action_proto_s, "", action_func);
+}
 
+int Fuargs::add_action(const string& action_proto,
+		       const string& action_descr,
+		       action_func_t action_func)
+{
   auto [action_name, action_args_list] = parse_action_proto(action_proto);
   if (auto it = action_protos.find(action_name);
       it != action_protos.end()) {
@@ -70,6 +70,7 @@ int Fuargs::add_action(const string& action_proto_s, action_func_t action_func)
     throw runtime_error(m.str());
   }
   action_protos[action_name] = make_pair(action_args_list, action_descr);
+  action_protos_keys.push_back(action_name);
   actions[action_name] = action_func;
   return 1;
 }
@@ -134,14 +135,51 @@ void Fuargs::exec_actions(int argc, char** argv,
 
 void Fuargs::print_known_actions()
 {
-  for (auto [k, v]: action_protos) {
-    cerr << k << endl;
-    for (auto arg: v.first) {
-      cerr << arg << endl;
+  bool any_action_descriptions = false;
+  cerr << "Available actions:" << endl;
+  for (auto k: action_protos_keys) {
+    auto v = action_protos[k];
+    cerr << "\t" << k << "[";
+    for (size_t i = 0; i < v.first.size(); i++) {
+      cerr << v.first[i] << "=...";
+      if (i < (v.first.size() - 1)) {
+        cerr << ",";
+      }
     }
-    cerr << v.second << endl;
+    cerr << "]" << endl;
+
+    if (v.second != "") {
+      any_action_descriptions = true;
+    }
   }
-}     
+
+  if (!any_action_descriptions) {
+    return;
+  }
+
+  cerr << endl;
+  for (auto k: action_protos_keys) {
+    auto v = action_protos[k];
+    if (v.second == "") {
+      continue;
+    }
+	    
+    cerr << "- " << k << "[";
+    for (size_t i = 0; i < v.first.size(); i++) {
+      //cerr << v.first[i] << "=...";
+      cerr << v.first[i];
+      if (i < (v.first.size() - 1)) {
+	cerr << ",";
+      }
+    }
+    cerr << "]" << endl;
+			     
+    cerr << "  " << replace_all(v.second, "{argv0}", Fuargs::argv[0]) << endl;
+  }
+
+  cerr << endl;
+  	
+}
 
 // parsing functions
 

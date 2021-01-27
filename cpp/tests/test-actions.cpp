@@ -9,16 +9,17 @@ ADD_ACTION("action[hi,a,b]", [](const Fuargs::args& args) {
     return true;
   });
 
-auto action2_proto = R"D(action2[]
-action2 -- something really important 
+ADD_ACTION
+("action2[]",
+ R"D(action2 -- something really important 
 to say
 go here
-)D";
-ADD_ACTION(action2_proto, [](const Fuargs::args& args) {
-    cout << "test_action2 called" << endl;
-    cout << "all done" << endl;
-    return true;
-  });
+)D",
+ [](const Fuargs::args& args) {
+  cout << "test_action2 called" << endl;
+  cout << "all done" << endl;
+  return true;
+ });
 
 int main(int argc, char* argv[])
 {

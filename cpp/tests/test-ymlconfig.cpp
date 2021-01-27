@@ -33,10 +33,10 @@ ADD_ACTION("parse_yml_file[yml_fn,pp_pathes]", [](const Fuargs::args& args) {
     return true;
   });
 
-auto parse_yml_proto = R"D(parse_yml[yml,pp_pathes]
-lookup yml file in pp_pathes then parse it
-)D";
-ADD_ACTION(parse_yml_proto, [](const Fuargs::args& args) {
+ADD_ACTION
+("parse_yml[yml,pp_pathes]",
+ "lookup yml file in pp_pathes then parse it",
+ [](const Fuargs::args& args) {
     auto pp_pathes = string_strip(string_split(args.get("pp_pathes"), ','));
     cout << "pp_pathes: " << string_join(pp_pathes, ';') << endl;
     YMLConfigPP pp(pp_pathes);
